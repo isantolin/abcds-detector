@@ -24,13 +24,13 @@ Annotations used:
 """
 
 from annotations_evaluation.annotations_generation import Annotations
-from gcp_api_services.gcs_api_service import gcs_api_service
-from helpers.annotations_helpers import find_elements_in_transcript
 from configuration import Configuration
+from helpers import gcs_utils
+from helpers.annotations_helpers import find_elements_in_transcript
 
 
 def detect_product_mention_speech(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> tuple[bool, bool]:
   """Detect Product Mention (Speech)
   Args:
@@ -40,7 +40,7 @@ def detect_product_mention_speech(
   Returns:
       product_mention_speech: product mention speech evaluation
   """
-  product_mention_speech, na = detect(config, feature_name, video_uri)
+  product_mention_speech, _na = detect(config, feature_name, video_uri)
 
   print(f"{feature_name}: {product_mention_speech} \n")
 
@@ -48,7 +48,7 @@ def detect_product_mention_speech(
 
 
 def detect_product_mention_speech_1st_5_secs(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> tuple[bool, bool]:
   """Detect Product Mention (Speech)
   Args:
@@ -58,8 +58,8 @@ def detect_product_mention_speech_1st_5_secs(
   Returns:
       product_mention_speech_1st_5_secs: product mention speech evaluation
   """
-  na, product_mention_speech_1st_5_secs = detect(
-      config, feature_name, video_uri
+  _na, product_mention_speech_1st_5_secs = detect(
+    config, feature_name, video_uri
   )
 
   print(f"{feature_name}: {product_mention_speech_1st_5_secs} \n")
@@ -68,7 +68,7 @@ def detect_product_mention_speech_1st_5_secs(
 
 
 def detect(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> tuple[bool, bool]:
   """Detect Product Mention (Speech) & Product Mention (Speech) (First 5 seconds)
   Args:
@@ -79,10 +79,8 @@ def detect(
       product_mention_speech,
       product_mention_speech_1st_5_secs: product mention speech evaluation
   """
-  annotation_uri = (
-      f"{gcs_api_service.get_annotation_uri(config, video_uri)}{Annotations.SPEECH_ANNOTATIONS.value}.json"
-  )
-  speech_annotation_results = gcs_api_service.load_blob(annotation_uri)
+  annotation_uri = f"{gcs_utils.get_annotation_uri(config, video_uri)}{Annotations.SPEECH_ANNOTATIONS.value}.json"
+  speech_annotation_results = gcs_utils.load_annotation_blob(annotation_uri)
 
   # Feature Product Mention (Speech)
   product_mention_speech = False
@@ -94,24 +92,24 @@ def detect(
   if "speech_transcriptions" in speech_annotation_results:
     # Video API: Evaluate product_mention_speech & product_mention_speech_1st_5_secs
     (
-        product_mention_speech,
-        product_mention_speech_1st_5_secs,
+      product_mention_speech,
+      product_mention_speech_1st_5_secs,
     ) = find_elements_in_transcript(
-        config,
-        speech_transcriptions=speech_annotation_results.get(
-            "speech_transcriptions"
-        ),
-        elements=config.branded_products,
-        elements_categories=config.branded_products_categories,
-        apply_condition=False,
+      config,
+      speech_transcriptions=speech_annotation_results.get(
+        "speech_transcriptions"
+      ),
+      elements=config.branded_products,
+      elements_categories=config.branded_products_categories,
+      apply_condition=False,
     )
   else:
     print(
-        f"No Speech annotations found. Skipping {feature_name} evaluation with"
-        " Video Intelligence API."
+      f"No Speech annotations found. Skipping {feature_name} evaluation with"
+      " Video Intelligence API."
     )
 
   return (
-      product_mention_speech,
-      product_mention_speech_1st_5_secs,
+    product_mention_speech,
+    product_mention_speech_1st_5_secs,
   )

@@ -24,13 +24,13 @@ Annotations used:
 """
 
 from annotations_evaluation.annotations_generation import Annotations
-from gcp_api_services.gcs_api_service import gcs_api_service
-from helpers.annotations_helpers import calculate_time_seconds
 from configuration import Configuration
+from helpers import gcs_utils
+from helpers.annotations_helpers import calculate_time_seconds
 
 
 def detect_visible_face(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> bool:
   """Detect Visible Face (First 5 seconds)
   Args:
@@ -40,7 +40,7 @@ def detect_visible_face(
   Returns:
       visible_face_1st_5_secs: visible face evaluation
   """
-  visible_face_1st_5_secs, na = detect(config, feature_name, video_uri)
+  visible_face_1st_5_secs, _na = detect(config, feature_name, video_uri)
 
   print(f"{feature_name}: {visible_face_1st_5_secs} \n")
 
@@ -48,7 +48,7 @@ def detect_visible_face(
 
 
 def detect_visible_face_close_up(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> tuple[bool, bool]:
   """Detect Visible Face (Close Up)
   Args:
@@ -59,7 +59,7 @@ def detect_visible_face_close_up(
       visible_face_1st_5_secs,
       visible_face_close_up: visible face evaluation
   """
-  na, visible_face_close_up = detect(config, feature_name, video_uri)
+  _na, visible_face_close_up = detect(config, feature_name, video_uri)
 
   print(f"{feature_name}: {visible_face_close_up} \n")
 
@@ -67,7 +67,7 @@ def detect_visible_face_close_up(
 
 
 def detect(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> tuple[bool, bool]:
   """Detect Visible Face (First 5 seconds) & Visible Face (Close Up)
   Args:
@@ -78,10 +78,8 @@ def detect(
       visible_face_close_up: visible face evaluation
   """
 
-  annotation_uri = (
-      f"{gcs_api_service.get_annotation_uri(config, video_uri)}{Annotations.FACE_ANNOTATIONS.value}.json"
-  )
-  face_annotation_results = gcs_api_service.load_blob(annotation_uri)
+  annotation_uri = f"{gcs_utils.get_annotation_uri(config, video_uri)}{Annotations.FACE_ANNOTATIONS.value}.json"
+  face_annotation_results = gcs_utils.load_annotation_blob(annotation_uri)
 
   # Feature Visible Face (First 5 seconds)
   visible_face_1st_5_secs = False
@@ -94,11 +92,11 @@ def detect(
     # Video API: Evaluate visible_face_1st_5_secs_feature and visible_face_close_up_feature
     if face_annotation_results.get("face_detection_annotations"):
       for annotation in face_annotation_results.get(
-          "face_detection_annotations"
+        "face_detection_annotations"
       ):
         for track in annotation.get("tracks"):
           start_time_secs = calculate_time_seconds(
-              track.get("segment"), "start_time_offset"
+            track.get("segment"), "start_time_offset"
           )
           # Check confidence against user defined threshold
           if track.get("confidence") >= config.confidence_threshold:
@@ -117,8 +115,8 @@ def detect(
                 visible_face_close_up = True
   else:
     print(
-        f"No Face annotations found. Skipping {feature_name} evaluation with"
-        " Video Intelligence API."
+      f"No Face annotations found. Skipping {feature_name} evaluation with"
+      " Video Intelligence API."
     )
 
   return visible_face_1st_5_secs, visible_face_close_up

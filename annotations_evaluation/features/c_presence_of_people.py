@@ -24,13 +24,13 @@ Annotations used:
 """
 
 from annotations_evaluation.annotations_generation import Annotations
-from gcp_api_services.gcs_api_service import gcs_api_service
-from helpers.annotations_helpers import calculate_time_seconds
 from configuration import Configuration
+from helpers import gcs_utils
+from helpers.annotations_helpers import calculate_time_seconds
 
 
 def detect_presence_of_people(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> bool:
   """Detect Presence of People
   Args:
@@ -41,7 +41,7 @@ def detect_presence_of_people(
       presence_of_people,
       presence_of_people_1st_5_secs: presence of people evaluation
   """
-  presence_of_people, na = detect(config, feature_name, video_uri)
+  presence_of_people, _na = detect(config, feature_name, video_uri)
 
   print(f"{feature_name}: {presence_of_people} \n")
 
@@ -49,7 +49,7 @@ def detect_presence_of_people(
 
 
 def detect_presence_of_people_1st_5_secs(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> bool:
   """Detect Presence of People (First 5 seconds)
   Args:
@@ -59,7 +59,7 @@ def detect_presence_of_people_1st_5_secs(
   Returns:
       presence_of_people_1st_5_secs: presence of people evaluation
   """
-  na, presence_of_people_1st_5_secs = detect(config, feature_name, video_uri)
+  _na, presence_of_people_1st_5_secs = detect(config, feature_name, video_uri)
 
   print(f"{feature_name}: {presence_of_people_1st_5_secs} \n")
 
@@ -67,7 +67,7 @@ def detect_presence_of_people_1st_5_secs(
 
 
 def detect(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> tuple[bool, bool]:
   """Detect Presence of People & Presence of People (First 5 seconds)
   Args:
@@ -79,10 +79,8 @@ def detect(
       presence_of_people_1st_5_secs: presence of people evaluation
   """
 
-  annotation_uri = (
-      f"{gcs_api_service.get_annotation_uri(config, video_uri)}{Annotations.PEOPLE_ANNOTATIONS.value}.json"
-  )
-  people_annotation_results = gcs_api_service.load_blob(annotation_uri)
+  annotation_uri = f"{gcs_utils.get_annotation_uri(config, video_uri)}{Annotations.PEOPLE_ANNOTATIONS.value}.json"
+  people_annotation_results = gcs_utils.load_annotation_blob(annotation_uri)
 
   # Feature Presence of People
   presence_of_people = False
@@ -94,14 +92,14 @@ def detect(
   if "person_detection_annotations" in people_annotation_results:
     # Video API: Evaluate presence_of_people_feature and presence_of_people_1st_5_secs_feature
     for people_annotation in people_annotation_results.get(
-        "person_detection_annotations"
+      "person_detection_annotations"
     ):
       for track in people_annotation.get("tracks"):
         # Check confidence against user defined threshold
         if track.get("confidence") >= config.confidence_threshold:
           presence_of_people = True
           start_time_secs = calculate_time_seconds(
-              track.get("segment"), "start_time_offset"
+            track.get("segment"), "start_time_offset"
           )
           if start_time_secs < config.early_time_seconds:
             presence_of_people_1st_5_secs = True
@@ -109,8 +107,8 @@ def detect(
           # characteristics - -e.g.clothes, posture of the person detected.
   else:
     print(
-        f"No People annotations found. Skipping {feature_name} evaluation with"
-        " Video Intelligence API."
+      f"No People annotations found. Skipping {feature_name} evaluation with"
+      " Video Intelligence API."
     )
 
   return presence_of_people, presence_of_people_1st_5_secs

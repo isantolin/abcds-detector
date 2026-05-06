@@ -91,16 +91,16 @@ class VideoAssessment:
 class LLMParameters:
   """Class that represents the required params to make a prediction to the LLM"""
 
-  model_name: str = "gemini-2.5-pro"
+  model_name: str = "gemini-3.1-pro"
   location: str = "us-central1"
   modality: dict = field(default_factory=lambda: {"type": "TEXT"})
   generation_config: dict = field(
-      default_factory=lambda: {
-          "max_output_tokens": 65535,
-          "temperature": 1,
-          "top_p": 0.95,
-          "response_schema": {"type": "string"},
-      }
+    default_factory=lambda: {
+      "max_output_tokens": 65535,
+      "temperature": 1,
+      "top_p": 0.95,
+      "response_schema": {"type": "string"},
+    }
   )
 
   def set_modality(self, modality: dict) -> None:
@@ -128,91 +128,91 @@ class PromptConfig:
 
 
 VIDEO_RESPONSE_SCHEMA = {
-    "type": "array",
-    "items": {
-        "type": "object",
-        "properties": {
-            "id": {
-                "type": "string",
-            },
-            "name": {
-                "type": "string",
-            },
-            "category": {
-                "type": "string",
-            },
-            "sub_category": {
-                "type": "string",
-            },
-            "video_segment": {
-                "type": "string",
-            },
-            "evaluation_criteria": {
-                "type": "string",
-            },
-            "detected": {
-                "type": "boolean",
-            },
-            "confidence_score": {
-                "type": "number",
-            },
-            "rationale": {
-                "type": "string",
-            },
-            "evidence": {
-                "type": "string",
-            },
-            "strengths": {
-                "type": "string",
-            },
-            "weaknesses": {
-                "type": "string",
-            },
-        },
-        "required": [
-            "id",
-            "name",
-            "category",
-            "sub_category",
-            "video_segment",
-            "evaluation_criteria",
-            "detected",
-            "confidence_score",
-            "rationale",
-            "evidence",
-            "strengths",
-            "weaknesses",
-        ],
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+      },
+      "name": {
+        "type": "string",
+      },
+      "category": {
+        "type": "string",
+      },
+      "sub_category": {
+        "type": "string",
+      },
+      "video_segment": {
+        "type": "string",
+      },
+      "evaluation_criteria": {
+        "type": "string",
+      },
+      "detected": {
+        "type": "boolean",
+      },
+      "confidence_score": {
+        "type": "number",
+      },
+      "rationale": {
+        "type": "string",
+      },
+      "evidence": {
+        "type": "string",
+      },
+      "strengths": {
+        "type": "string",
+      },
+      "weaknesses": {
+        "type": "string",
+      },
     },
+    "required": [
+      "id",
+      "name",
+      "category",
+      "sub_category",
+      "video_segment",
+      "evaluation_criteria",
+      "detected",
+      "confidence_score",
+      "rationale",
+      "evidence",
+      "strengths",
+      "weaknesses",
+    ],
+  },
 }
 
 
 VIDEO_METADATA_RESPONSE_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "brand_name": {"type": "string"},
-        "brand_variations": {
-            "type": "array",
-            "items": {"type": "string"},
-        },
-        "branded_products": {
-            "type": "array",
-            "items": {"type": "string"},
-        },
-        "branded_products_categories": {
-            "type": "array",
-            "items": {"type": "string"},
-        },
-        "branded_call_to_actions": {
-            "type": "array",
-            "items": {"type": "string"},
-        },
+  "type": "object",
+  "properties": {
+    "brand_name": {"type": "string"},
+    "brand_variations": {
+      "type": "array",
+      "items": {"type": "string"},
     },
-    "required": [
-        "brand_name",
-        "brand_variations",
-        "branded_products",
-        "branded_products_categories",
-        "branded_call_to_actions",
-    ],
+    "branded_products": {
+      "type": "array",
+      "items": {"type": "string"},
+    },
+    "branded_products_categories": {
+      "type": "array",
+      "items": {"type": "string"},
+    },
+    "branded_call_to_actions": {
+      "type": "array",
+      "items": {"type": "string"},
+    },
+  },
+  "required": [
+    "brand_name",
+    "brand_variations",
+    "branded_products",
+    "branded_products_categories",
+    "branded_call_to_actions",
+  ],
 }

@@ -24,12 +24,12 @@ Annotations used:
 """
 
 from annotations_evaluation.annotations_generation import Annotations
-from gcp_api_services.gcs_api_service import gcs_api_service
 from configuration import Configuration
+from helpers import gcs_utils
 
 
 def detect_dynamic_start(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> dict:
   """Detects Dynamic Start
   Args:
@@ -38,10 +38,8 @@ def detect_dynamic_start(
   Returns:
       dynamic_start: dynamic start evaluation
   """
-  annotation_uri = (
-      f"{gcs_api_service.get_annotation_uri(config, video_uri)}{Annotations.GENERIC_ANNOTATIONS.value}.json"
-  )
-  shot_annotation_results = gcs_api_service.load_blob(annotation_uri)
+  annotation_uri = f"{gcs_utils.get_annotation_uri(config, video_uri)}{Annotations.GENERIC_ANNOTATIONS.value}.json"
+  shot_annotation_results = gcs_utils.load_annotation_blob(annotation_uri)
 
   # Feature Dynamic Start
   dynamic_start = False
@@ -49,7 +47,7 @@ def detect_dynamic_start(
   # Video API: Evaluate dynamic_start_feature
   if "shot_annotations" in shot_annotation_results:
     first_shot_end_time_off_set = shot_annotation_results.get(
-        "shot_annotations"
+      "shot_annotations"
     )[0]
     nanos = first_shot_end_time_off_set.get("end_time_offset").get("nanos")
     seconds = first_shot_end_time_off_set.get("end_time_offset").get("seconds")
@@ -67,8 +65,8 @@ def detect_dynamic_start(
       dynamic_start = True
   else:
     print(
-        f"No Shot annotations found. Skipping {feature_name} evaluation with"
-        " Video Intelligence API."
+      f"No Shot annotations found. Skipping {feature_name} evaluation with"
+      " Video Intelligence API."
     )
 
   print(f"{feature_name}: {dynamic_start} \n")

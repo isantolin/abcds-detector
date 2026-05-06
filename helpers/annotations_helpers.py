@@ -36,15 +36,15 @@ def calculate_time_seconds(part_obj: dict, part: str) -> float:
     # TODO (ae) check this later
     return 0
   time_seconds = (
-      (part_obj.get(part).get("seconds") or 0)
-      + ((part_obj.get(part).get("microseconds") or 0) / 1e6)
-      + ((part_obj.get(part).get("nanos") or 0) / 1e9)
+    (part_obj.get(part).get("seconds") or 0)
+    + ((part_obj.get(part).get("microseconds") or 0) / 1e6)
+    + ((part_obj.get(part).get("nanos") or 0) / 1e9)
   )
   return time_seconds
 
 
 def detected_text_in_first_5_seconds(
-    config: Configuration, annotation: dict
+  config: Configuration, annotation: dict
 ) -> tuple[bool, any]:
   """Detect if the text feature appears in the first 5 seconds
   Args:
@@ -56,7 +56,7 @@ def detected_text_in_first_5_seconds(
   """
   for segment in annotation.get("segments"):
     start_time_secs = calculate_time_seconds(
-        segment.get("segment"), "start_time_offset"
+      segment.get("segment"), "start_time_offset"
     )
     if start_time_secs > config.early_time_seconds:
       continue  # Ignore a segment > 5 secs
@@ -69,11 +69,11 @@ def detected_text_in_first_5_seconds(
 
 
 def find_elements_in_transcript(
-    config: Configuration,
-    speech_transcriptions: list[dict],
-    elements: list[str],
-    elements_categories: list[str],
-    apply_condition: bool,
+  config: Configuration,
+  speech_transcriptions: list[dict],
+  elements: list[str],
+  elements_categories: list[str],
+  apply_condition: bool,
 ) -> tuple[bool, bool]:
   """Finds a list of elements in the video transcript
   Args:
@@ -98,26 +98,26 @@ def find_elements_in_transcript(
     for alternative in speech_transcription.get("alternatives"):
       # Check confidence against user defined threshold
       if (
-          alternative
-          and alternative.get("confidence") >= config.confidence_threshold
+        alternative
+        and alternative.get("confidence") >= config.confidence_threshold
       ):
         transcript = alternative.get("transcript")
         # Check if elements or elements categories are found in transcript
         # TODO (ae) filter out words with less than x chars? - DONE
         if apply_condition:
           found_elements = find_text_annotation_elements_in_transcript(
-              elements, transcript
+            elements, transcript
           )
         else:
           found_elements = [
-              element
-              for element in elements
-              if element.lower() in transcript.lower()
+            element
+            for element in elements
+            if element.lower() in transcript.lower()
           ]
         found_elements_categories = [
-            elements_category
-            for elements_category in elements_categories
-            if elements_category.lower() in transcript.lower()
+          elements_category
+          for elements_category in elements_categories
+          if elements_category.lower() in transcript.lower()
         ]
         if len(found_elements) > 0 or len(found_elements_categories) > 0:
           element_mention_speech = True
@@ -126,9 +126,9 @@ def find_elements_in_transcript(
         words = alternative.get("words") if "words" in alternative else []
         # Sort words by time to construct correct transcript later
         sorted_words = sorted(
-            words,
-            key=lambda x: calculate_time_seconds(x, "start_time"),
-            reverse=False,
+          words,
+          key=lambda x: calculate_time_seconds(x, "start_time"),
+          reverse=False,
         )
         for word_info in sorted_words:
           start_time_secs = calculate_time_seconds(word_info, "start_time")
@@ -140,22 +140,22 @@ def find_elements_in_transcript(
   transcript_1st_5_secs = " ".join(words_1st_5_secs)
   if apply_condition:
     found_elements_1st_5_seconds = find_text_annotation_elements_in_transcript(
-        elements, transcript_1st_5_secs
+      elements, transcript_1st_5_secs
     )
   else:
     found_elements_1st_5_seconds = [
-        element
-        for element in elements
-        if element.lower() in transcript_1st_5_secs.lower()
+      element
+      for element in elements
+      if element.lower() in transcript_1st_5_secs.lower()
     ]
   found_elements_categories_1st_5_seconds = [
-      elements_category
-      for elements_category in elements_categories
-      if elements_category.lower() in transcript_1st_5_secs.lower()
+    elements_category
+    for elements_category in elements_categories
+    if elements_category.lower() in transcript_1st_5_secs.lower()
   ]
   if (
-      len(found_elements_1st_5_seconds) > 0
-      or len(found_elements_categories_1st_5_seconds) > 0
+    len(found_elements_1st_5_seconds) > 0
+    or len(found_elements_categories_1st_5_seconds) > 0
   ):
     element_mention_speech_1st_5_secs = True
 
@@ -163,7 +163,7 @@ def find_elements_in_transcript(
 
 
 def find_text_annotation_elements_in_transcript(
-    elements: list[str], transcript: str
+  elements: list[str], transcript: str
 ):
   """Checks if text annotation elements in an array are found in transcript
   Args:
@@ -173,17 +173,20 @@ def find_text_annotation_elements_in_transcript(
       words are sometimes 1 character only.
   """
   found_elements = [
-      element
-      for element in elements
-      # filter out words with less than 3 chars? - DONE
-      if len(element) > 3 and element.lower() in transcript.lower()
+    element
+    for element in elements
+    # filter out words with less than 3 chars? - DONE
+    if len(element) > 3 and element.lower() in transcript.lower()
   ]
   return found_elements
 
 
-def get_speech_transcript(speech_transcriptions: list[dict]) -> str:
+def get_speech_transcript(
+  config: Configuration, speech_transcriptions: list[dict]
+) -> str:
   """Get transcript built from transcript alternatives
   Args:
+      config: all the parameters
       speech_transcriptions: the speech annotations
   Returns
       final_transcript: the constructured transcript
@@ -199,28 +202,28 @@ def get_speech_transcript(speech_transcriptions: list[dict]) -> str:
       # Check confidence against user defined threshold
       transcript = alternative.get("transcript")
       if (
-          alternative
-          and alternative.get("confidence") >= config.confidence_threshold
+        alternative
+        and alternative.get("confidence") >= config.confidence_threshold
       ):
         transcript_alternatives.append(transcript)
         transcript_alt_confidence.append(alternative)
 
   sorted_transcript_by_confidence = sorted(
-      transcript_alt_confidence,
-      key=lambda x: x.get("confidence"),
-      reverse=True,
+    transcript_alt_confidence,
+    key=lambda x: x.get("confidence"),
+    reverse=True,
   )  # don't use this for now
-  highest_confidence_trascript = (
-      sorted_transcript_by_confidence[0].get("transcript")
-      if len(sorted_transcript_by_confidence) > 0
-      else ""
+  (
+    sorted_transcript_by_confidence[0].get("transcript")
+    if len(sorted_transcript_by_confidence) > 0
+    else ""
   )  # don't use this for now
   final_transcript = " ".join(transcript_alternatives)
   return final_transcript
 
 
 def get_speech_transcript_1st_5_secs(
-    config: Configuration, speech_transcriptions: list[dict]
+  config: Configuration, speech_transcriptions: list[dict]
 ):
   """Get transcript with highest confidence
   Args:
@@ -238,17 +241,17 @@ def get_speech_transcript_1st_5_secs(
     for alternative in speech_transcription.get("alternatives"):
       # Check confidence against user defined threshold
       if (
-          alternative
-          and alternative.get("confidence") >= config.confidence_threshold
+        alternative
+        and alternative.get("confidence") >= config.confidence_threshold
       ):
         # For 1st 5 secs get transcript from words
         # since only the words[] contain times
         words = alternative.get("words") if "words" in alternative else []
         # Sort words by time to construct correct transcript later
         sorted_words = sorted(
-            words,
-            key=lambda x: calculate_time_seconds(x, "start_time"),
-            reverse=False,
+          words,
+          key=lambda x: calculate_time_seconds(x, "start_time"),
+          reverse=False,
         )
         for word_info in sorted_words:
           start_time_secs = calculate_time_seconds(word_info, "start_time")

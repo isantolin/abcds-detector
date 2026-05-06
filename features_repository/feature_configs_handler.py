@@ -21,22 +21,23 @@
 """Module with the supported ABCD feature configurations"""
 
 import logging
-from models import (
-    VideoFeature,
-    VideoFeatureCategory,
-)
+
+import models
 from features_repository.long_form_abcd_features import (
-    get_long_form_abcd_feature_configs,
+  get_long_form_abcd_feature_configs,
 )
 from features_repository.shorts_features import get_shorts_feature_configs
-import models
+from models import (
+  VideoFeature,
+  VideoFeatureCategory,
+)
 
 
 class FeaturesConfigsHandler:
   """Service that handles video evaluations using AI (LLMs + Annotations)"""
 
   def get_feature_configs_by_category(
-      self, category: VideoFeatureCategory
+    self, category: VideoFeatureCategory
   ) -> list[VideoFeature]:
     """Gets all the supported features by category
     Full ABCD, Shorts.
@@ -60,14 +61,14 @@ class FeaturesConfigsHandler:
       feature.evaluation_method = models.EvaluationMethod.LLMS
 
   def get_features_by_category_by_group_config(
-      self, category: VideoFeatureCategory
+    self, category: VideoFeatureCategory
   ) -> list[VideoFeature]:
     """Groups features by video_segment in feature_configs"""
     feature_configs = self.get_feature_configs_by_category(category)
     grouped_features = {}
     for d in feature_configs:
       grouped_features.setdefault(d.group_by.value, []).append(
-          d
+        d
       )  # Check this video_segment!
     return grouped_features
 
@@ -75,12 +76,10 @@ class FeaturesConfigsHandler:
     """Gets all feature configs for Full ABCD and Shorts"""
     feature_configs = []
     feature_configs.extend(
-        self.get_feature_configs_by_category(
-            VideoFeatureCategory.LONG_FORM_ABCD
-        )
+      self.get_feature_configs_by_category(VideoFeatureCategory.LONG_FORM_ABCD)
     )
     feature_configs.extend(
-        self.get_feature_configs_by_category(VideoFeatureCategory.SHORTS)
+      self.get_feature_configs_by_category(VideoFeatureCategory.SHORTS)
     )
 
     return feature_configs
@@ -89,7 +88,7 @@ class FeaturesConfigsHandler:
     """Gets a feature by id"""
     feature_configs = self.get_all_features()
     feature = [
-        feature for feature in feature_configs if feature.id == feature_id
+      feature for feature in feature_configs if feature.id == feature_id
     ]
     if len(feature) > 0:
       return feature[0]

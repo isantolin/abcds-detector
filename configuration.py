@@ -21,6 +21,7 @@
 """Module that defines global parameters"""
 
 import os
+
 from models import CreativeProviderType, LLMParameters
 
 FFMPEG_BUFFER = "reduced/buffer.mp4"
@@ -80,22 +81,22 @@ class Configuration:
     self.llm_params: LLMParameters = LLMParameters()
 
   def set_parameters(
-      self,
-      project_id: str,
-      project_zone: str,
-      bucket_name: str,
-      knowledge_graph_api_key: str,
-      bigquery_dataset: str,
-      bigquery_table: str,
-      assessment_file: str,
-      use_annotations: bool,
-      use_llms: bool,
-      extract_brand_metadata: bool,
-      run_long_form_abcd: bool,
-      run_shorts: bool,
-      features_to_evaluate: list[str],
-      creative_provider_type: CreativeProviderType,
-      verbose: bool,
+    self,
+    project_id: str,
+    project_zone: str,
+    bucket_name: str,
+    knowledge_graph_api_key: str,
+    bigquery_dataset: str,
+    bigquery_table: str,
+    assessment_file: str,
+    use_annotations: bool,
+    use_llms: bool,
+    extract_brand_metadata: bool,
+    run_long_form_abcd: bool,
+    run_shorts: bool,
+    features_to_evaluate: list[str],
+    creative_provider_type: CreativeProviderType,
+    verbose: bool,
   ) -> None:
     """Set the required parameters for ABCD to run.
 
@@ -153,12 +154,12 @@ class Configuration:
       self.video_uris = [video_uris]
 
   def set_brand_details(
-      self,
-      brand_name: str,
-      brand_variations: str,
-      products: str,
-      products_categories: str,
-      call_to_actions: str,
+    self,
+    brand_name: str,
+    brand_variations: str,
+    products: str,
+    products_categories: str,
+    call_to_actions: str,
   ) -> None:
     """Set brand values to help AI evaluate videos.
 
@@ -171,32 +172,30 @@ class Configuration:
     """
     self.brand_name = brand_name
     self.brand_variations = (
-        [t.strip() for t in brand_variations.split(",")]
-        if brand_variations
-        else []
+      [t.strip() for t in brand_variations.split(",")]
+      if brand_variations
+      else []
     )
     self.branded_products = (
-        [t.strip() for t in products.split(",")] if products else []
+      [t.strip() for t in products.split(",")] if products else []
     )
     self.branded_products_categories = (
-        [t.strip() for t in products_categories.split(",")]
-        if products_categories
-        else []
+      [t.strip() for t in products_categories.split(",")]
+      if products_categories
+      else []
     )
     self.branded_call_to_actions = (
-        [t.strip() for t in call_to_actions.split(",")]
-        if call_to_actions
-        else []
+      [t.strip() for t in call_to_actions.split(",")] if call_to_actions else []
     )
 
   def set_annotations_params(
-      self,
-      early_time_seconds: int,
-      confidence_threshold: float,
-      face_surface_threshold: float,
-      logo_size_threshold: float,
-      avg_shot_duration_seconds: int,
-      dynamic_cutoff_ms: int,
+    self,
+    early_time_seconds: int,
+    confidence_threshold: float,
+    face_surface_threshold: float,
+    logo_size_threshold: float,
+    avg_shot_duration_seconds: int,
+    dynamic_cutoff_ms: int,
   ) -> None:
     """Set annotation thresholds to help the AI recognize content.
 
@@ -216,12 +215,12 @@ class Configuration:
     self.dynamic_cutoff_ms = dynamic_cutoff_ms
 
   def set_llm_params(
-      self,
-      llm_name: str,
-      location: str,
-      max_output_tokens: int,
-      temperature: float,
-      top_p: float,
+    self,
+    llm_name: str,
+    location: str,
+    max_output_tokens: int,
+    temperature: float,
+    top_p: float,
   ) -> None:
     """Set LLM model parameters.
 
@@ -235,8 +234,8 @@ class Configuration:
     self.llm_params.model_name = llm_name
     self.llm_params.location = location
     self.llm_params.generation_config = {
-        "max_output_tokens": int(max_output_tokens),
-        "temperature": float(temperature),
-        "top_p": float(top_p),
-        "response_schema": {"type": "string"},
+      "max_output_tokens": int(max_output_tokens),
+      "temperature": float(temperature),
+      "top_p": float(top_p),
+      "response_schema": {"type": "string"},
     }

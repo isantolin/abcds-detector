@@ -20,13 +20,12 @@
 
 """Module with the supported ABCD feature configurations for Shorts"""
 
-
 from models import (
-    VideoFeature,
-    VideoSegment,
-    EvaluationMethod,
-    VideoFeatureCategory,
-    VideoFeatureSubCategory,
+  EvaluationMethod,
+  VideoFeature,
+  VideoFeatureCategory,
+  VideoFeatureSubCategory,
+  VideoSegment,
 )
 
 
@@ -43,19 +42,19 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
   """
   # Get original shorts features
   feature_configs = [
-      VideoFeature(
-          id="tight_framing_index",
-          name="Tight Framing & Visual Dominance",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.ATTRACT,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria="""
+    VideoFeature(
+      id="tight_framing_index",
+      name="Tight Framing & Visual Dominance",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.ATTRACT,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria="""
                 Quantifies the spatial dominance of the primary subject.
                 Tight framing is defined by a Subject-to-Frame Ratio (SfR) of ≥60%.
-                The score reflects the 'Density' (persistence) of tight framing, 
+                The score reflects the 'Density' (persistence) of tight framing,
                 differentiating between incidental close-ups and thematic visual dominance.
             """,
-          prompt_template="""
+      prompt_template="""
                 Act as a professional Cinematographer and Video Analyst. Your goal is to measure
                 'Visual Weight' through Tight Framing detection.
             
@@ -113,25 +112,25 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
                 - **Negative Space:** Ignore solid color backgrounds (graphics); focus on the subject's physical bounding box.
                 - **Calculation:** Ensure the density_score is a precise float based on the temporal_segments sum.
             """,
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
-      ),
-      VideoFeature(
-          id="shorts_human_voice",
-          name="Human Voice Presence",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.ATTRACT,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria="""
-            Quantifies the presence, duration, and quality of human speech. 
-            Voice includes Voice-Overs (VO), direct-to-camera dialogue, or background 
-            narration. The metric measures 'Vocal Density' (percentage of video containing 
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
+    VideoFeature(
+      id="shorts_human_voice",
+      name="Human Voice Presence",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.ATTRACT,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria="""
+            Quantifies the presence, duration, and quality of human speech.
+            Voice includes Voice-Overs (VO), direct-to-camera dialogue, or background
+            narration. The metric measures 'Vocal Density' (percentage of video containing
             speech) and assesses the clarity and role of the speaker.
         """,
-          prompt_template="""
+      prompt_template="""
             Act as a professional Cinematographer and Video Analyst. Your goal is to analyze the audio track of this video specifically for human vocal presence.
 
             VIDEO METADATA: {metadata_summary}
@@ -149,7 +148,7 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
 
             ### FORMAT RESPONSE AS JSON:
             {{
-                "detected": boolean, 
+                "detected": boolean,
                 "confidence_score": float, # Certainty that the detected audio is a human voice
                 "metrics": {{
                     "density_score": float, # Total speech duration / Total video duration
@@ -184,35 +183,35 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
             3. Evaluate the **vocal_clarity_score**—reduce this if background music or noise makes speech hard to follow.
             4. Determine if the "Hook" (0:00-0:02) contains speech, as this is a high-retention signal.
         """,
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
-      ),
-      VideoFeature(
-          id="shorts_direct_to_camera",
-          name="Direct to Camera",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.ATTRACT,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria="""
-                Quantifies the duration and intensity of direct eye contact between the 
-                on-screen subject and the camera lens. This feature measures the 
-                'Direct Address Density' and assesses the intimacy of the framing 
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
+    VideoFeature(
+      id="shorts_direct_to_camera",
+      name="Direct to Camera",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.ATTRACT,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria="""
+                Quantifies the duration and intensity of direct eye contact between the
+                on-screen subject and the camera lens. This feature measures the
+                'Direct Address Density' and assesses the intimacy of the framing
                 (e.g., face-to-face address).
             """,
-          prompt_template="""
-                Act as a professional Cinematographer and Video Analyst. Your goal is to 
-                analyze the video for instances where a person looks directly into the camera lens 
+      prompt_template="""
+                Act as a professional Cinematographer and Video Analyst. Your goal is to
+                analyze the video for instances where a person looks directly into the camera lens
                 to address the viewer.
 
                 VIDEO METADATA: {metadata_summary}
 
                 ### 1. METRIC DEFINITIONS:
-                - **Density Score:** (Total duration of direct eye contact / address) / (Total video duration). 
+                - **Density Score:** (Total duration of direct eye contact / address) / (Total video duration).
                 Represented as feature_quality_score in the JSON.
-                - **Eye Contact Intensity:** A measure of how consistently the subject maintains 
+                - **Eye Contact Intensity:** A measure of how consistently the subject maintains
                 gaze without looking away at scripts or monitors (0.0 - 1.0).
 
                 ### 2. ADDRESS MODES:
@@ -223,7 +222,7 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
 
                 ### FORMAT RESPONSE AS JSON:
                 {{
-                    "detected": boolean, 
+                    "detected": boolean,
                     "confidence_score": float, # Certainty that gaze is directed at the lens
                     "feature_quality_score": float, # Total direct address duration / Total duration
                     "metrics": {{
@@ -258,25 +257,25 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
                 3. Assess **eye_contact_intensity**—lower this if the subject is clearly reading a teleprompter or looking at themselves on the phone screen rather than the lens.
                 4. Check the "Hook" (0:00-0:02); direct address at the start is a major retention driver.
             """,
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
-      ),
-      VideoFeature(
-          id="shorts_has_supers",
-          name="Supers & Text-Audio Synchronicity",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.ATTRACT,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria="""
-        Quantifies the presence, accuracy, and synchronization of text overlays (supers) 
-        with the spoken audio. This measures 'Text Density' and the 'Synchronicity Score' 
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
+    VideoFeature(
+      id="shorts_has_supers",
+      name="Supers & Text-Audio Synchronicity",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.ATTRACT,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria="""
+        Quantifies the presence, accuracy, and synchronization of text overlays (supers)
+        with the spoken audio. This measures 'Text Density' and the 'Synchronicity Score'
         to determine how effectively the visual text reinforces the spoken message.
     """,
-          prompt_template="""
-        Act as a professional Cinematographer and Video Analyst. Your goal is to 
+      prompt_template="""
+        Act as a professional Cinematographer and Video Analyst. Your goal is to
         Analyze the video for SUPERS (text overlays) and their relationship to the audio.
         
         VIDEO METADATA: {metadata_summary}
@@ -284,7 +283,7 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
         ### 1. METRIC DEFINITIONS:
         - **Density Score:** (Total duration where text overlays are visible) / (Total video duration).
           Represented as feature_quality_score in the JSON.
-        - **Synchronicity Score:** (0.0 - 1.0) measure of how well text timing matches spoken words. 
+        - **Synchronicity Score:** (0.0 - 1.0) measure of how well text timing matches spoken words.
           1.0 = frame-perfect captions; 0.5 = static text roughly related; 0.0 = no relation.
 
         ### 2. SUPERS CATEGORIES:
@@ -331,25 +330,25 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
         4. Assess the **synchronicity_score**—lower this if text lingers too long or appears after the audio has passed.
         5. Verify if text is in the "Mobile Safe Zone" (central area, not blocked by platform UI).
     """,
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
-      ),
-      VideoFeature(
-          id="shorts_product_closeup",
-          name="Product Close-Up",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.BRAND,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria="""
-            Quantifies segments where the product occupies at least 30% of the frame. 
-            This measures standard product visibility and presence within a recognizable 
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
+    VideoFeature(
+      id="shorts_product_closeup",
+      name="Product Close-Up",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.BRAND,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria="""
+            Quantifies segments where the product occupies at least 30% of the frame.
+            This measures standard product visibility and presence within a recognizable
             context or environment.
         """,
-          prompt_template="""
-            Act as a professional Cinematographer and Video Analyst. Your goal is to 
+      prompt_template="""
+            Act as a professional Cinematographer and Video Analyst. Your goal is to
             measure 'Product Presence' via Close-Up detection.
             
             VIDEO METADATA: {metadata_summary}
@@ -367,7 +366,7 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
             ### FORMAT RESPONSE AS JSON:
             {{
                 "detected": boolean,
-                "confidence_score": float, 
+                "confidence_score": float,
                 "feature_quality_score": float, # Based on the Dynamic Scoring scale
                 "metrics": {{
                     "density_score": float, # MANDATORY: CU duration / Total duration
@@ -385,7 +384,7 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
                         "start": float,
                         "end": float,
                         "sfr_percentage": float,
-                        "description": str 
+                        "description": str
                     }}
                 ],
                 "overall_assessment": {{
@@ -399,25 +398,25 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
             - Only count segments where the Product is the main subject and fills 30%-59% of the frame.
             - If the product fills >60%, it exceeds this feature and belongs in the 'Extreme' category.
         """,
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
-      ),
-      VideoFeature(
-          id="shorts_product_extreme_closeup",
-          name="Product Extreme Close-Up",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.BRAND,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria="""
-            Quantifies segments where the product is the dominant visual element, 
-            occupying 60% or more of the frame. This measures 'Macro' focus and 
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
+    VideoFeature(
+      id="shorts_product_extreme_closeup",
+      name="Product Extreme Close-Up",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.BRAND,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria="""
+            Quantifies segments where the product is the dominant visual element,
+            occupying 60% or more of the frame. This measures 'Macro' focus and
             high-detail product showcasing.
         """,
-          prompt_template="""
-            Act as a professional Cinematographer and Video Analyst. Your goal is to 
+      prompt_template="""
+            Act as a professional Cinematographer and Video Analyst. Your goal is to
             measure 'Product Dominance' via Extreme Close-Up (ECU) detection.
             
             VIDEO METADATA: {metadata_summary}
@@ -436,7 +435,7 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
             {{
                 "detected": boolean,
                 "confidence_score": float,
-                "feature_quality_score": float, 
+                "feature_quality_score": float,
                 "metrics": {{
                     "density_score": float, # MANDATORY: ECU duration / Total duration
                     "peak_sfr_percentage": float, # Max frame fill observed
@@ -454,7 +453,7 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
                         "end": float,
                         "sfr_percentage": float,
                         "focus_point": str,
-                        "description": str 
+                        "description": str
                     }}
                 ],
                 "overall_assessment": {{
@@ -468,26 +467,26 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
             - Only count segments where the Product fills 60% or more of the frame.
             - Focus on detail: ECU shots are intended to show the "hero" aspects of the product.
         """,
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
-      ),
-      VideoFeature(
-          id="shorts_product_context_index",
-          name="Product Context & Usage Quality",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.CONNECT,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria="""
-            Evaluates the 'Show, Don't Tell' quality. Quantifies physical 
-            interaction, environmental realism, and utility demonstration. 
-            Measures both the duration of usage (Density) and the effectiveness 
-            of the demonstration (Quality Score).   
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
+    VideoFeature(
+      id="shorts_product_context_index",
+      name="Product Context & Usage Quality",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.CONNECT,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria="""
+            Evaluates the 'Show, Don't Tell' quality. Quantifies physical
+            interaction, environmental realism, and utility demonstration.
+            Measures both the duration of usage (Density) and the effectiveness
+            of the demonstration (Quality Score).
             """,
-          prompt_template="""
-            Act as a professional Cinematographer and Video Analyst. 
+      prompt_template="""
+            Act as a professional Cinematographer and Video Analyst.
             Analyze the 'Product-in-Use' effectiveness.
 
             VIDEO METADATA:
@@ -503,8 +502,8 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
             - 0-69: Minimal touching or product is merely a prop in the frame.
 
             2. CONTEXTUAL REALISM (30%)
-            - Focus: The "Where" and "Who". 
-            - Criteria: Is the environment a "lived-in" space (home, gym, office) vs. a sterile studio? 
+            - Focus: The "Where" and "Who".
+            - Criteria: Is the environment a "lived-in" space (home, gym, office) vs. a sterile studio?
             - 90-100: Authentic daily-life setting with natural lighting and relatable user behavior.
             - 70-89: Recognizable setting but feels slightly "staged" or over-polished.
             - 0-69: Infomercial style, white backgrounds, or disconnected from reality.
@@ -555,23 +554,23 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
             - MED (50-79): Product is used, but it feels like a "commercial." Correct use, but overly scripted.
             - LOW (<50): Product is just sitting there, or being held like a trophy for the camera.
             """,
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
-      ),
-      VideoFeature(
-          id="shorts_casual_language",
-          name="Casual Language",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.CONNECT,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria="""
-            Quantifies the informality of the script. Measures the use of everyday language, 
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
+    VideoFeature(
+      id="shorts_casual_language",
+      name="Casual Language",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.CONNECT,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria="""
+            Quantifies the informality of the script. Measures the use of everyday language,
             slang, contractions, and conversational filler vs. formal/corporate scripted speech.
         """,
-          prompt_template="""
+      prompt_template="""
             Act as a Linguistic and  Video Analyst. Your goal is to measure 'Tone Informality.'
 
             VIDEO METADATA:
@@ -598,23 +597,23 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
                 }}
             }}
             """,
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
-      ),
-      VideoFeature(
-          id="shorts_humor_index",
-          name="Humor & Comedic Timing",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.CONNECT,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria="""
-        Detects and quantifies attempts at humor, including wit, physical comedy, 
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
+    VideoFeature(
+      id="shorts_humor_index",
+      name="Humor & Comedic Timing",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.CONNECT,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria="""
+        Detects and quantifies attempts at humor, including wit, physical comedy,
         satire, or comedic timing.
     """,
-          prompt_template="""
+      prompt_template="""
         Act as a Creative Strategist. Analyze the video for 'Comedic Intent.'
 
             VIDEO METADATA:
@@ -641,24 +640,24 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
             }}
         }}
     """,
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
-      ),
-      VideoFeature(
-          id="character_driven",
-          name="Character-Driven",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.CONNECT,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria="""
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
+    VideoFeature(
+      id="character_driven",
+      name="Character-Driven",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.CONNECT,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria="""
             Video features a relatable character whose journey or transformation resonates with audience.
             Evaluates character prominence, relatability, and narrative journey shown.
             """,
-          prompt_template="""
-            Act as a Narrative Strategist and Video Analyst. Your goal is to measure 
+      prompt_template="""
+            Act as a Narrative Strategist and Video Analyst. Your goal is to measure
             'Character Dominance' and 'Persona-Led Storytelling.'
 
             VIDEO METADATA:
@@ -708,26 +707,26 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
                     "weighted_overall": float
                 }}
             }}""",
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
-      ),
-      VideoFeature(
-          id="shorts_audio_cta",
-          name="Call to Action (Audio)",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.DIRECT,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria="""
-        Detects and quantifies spoken instructions that direct the viewer to take 
-        action. This includes verbal commands from Voice-Overs (VO) or on-screen talent. 
-        Measures 'CTA Density' and 'Urgency Level' to determine the strength of the 
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
+    VideoFeature(
+      id="shorts_audio_cta",
+      name="Call to Action (Audio)",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.DIRECT,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria="""
+        Detects and quantifies spoken instructions that direct the viewer to take
+        action. This includes verbal commands from Voice-Overs (VO) or on-screen talent.
+        Measures 'CTA Density' and 'Urgency Level' to determine the strength of the
         conversion signal.
     """,
-          prompt_template="""
-        Act as a Direct Response Marketing Analyst. Your goal is to identify and 
+      prompt_template="""
+        Act as a Direct Response Marketing Analyst. Your goal is to identify and
         quantify the spoken Call to Action (CTA).
         
         VIDEO METADATA: {metadata_summary}
@@ -735,7 +734,7 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
         ### 1. METRIC DEFINITIONS:
         - **Density Score:** (Total duration of the spoken CTA) / (Total video duration).
           Represented as density_score in the JSON.
-        - **CTA Urgency:** (0.0 - 1.0) 1.0 = Explicit command with time-sensitivity (e.g., "Click the link below."); 
+        - **CTA Urgency:** (0.0 - 1.0) 1.0 = Explicit command with time-sensitivity (e.g., "Click the link below.");
           0.5 = General suggestion (e.g., "Check us out"); 0.1 = Brand mention only.
 
         ### 2. CTA DELIVERY MODES:
@@ -780,23 +779,23 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
         3. Assess **feature_quality_score** based on vocal clarity and "The Ask"—if the CTA is muffled or buried under loud music, lower the score.
         4. Note the placement: A CTA at the very end is standard; a CTA in the first 5 seconds is a "Fast-Action" strategy.
     """,
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
-      ),
-      VideoFeature(
-          id="special_offer_speech",
-          name="Special Offer (Speech)",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.DIRECT,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria="""
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
+    VideoFeature(
+      id="special_offer_speech",
+      name="Special Offer (Speech)",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.DIRECT,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria="""
             Audio/voiceover explicitly announces special offer, discount, or deal.
             Evaluates clarity of offer type, specific details mentioned, and delivery emphasis.
             """,
-          prompt_template="""
+      prompt_template="""
             Act as a Direct Response Marketing Analyst. Your goal is to evaluate: Is there a SPECIAL OFFER announced in speech?
 
             VIDEO METADATA:
@@ -846,35 +845,35 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
                     "weighted_overall": float
                 }}
             }}""",
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
-      ),
-      VideoFeature(
-          id="shorts_production_style_index",
-          name="Production Style",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.NONE,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria="""
-        Quantifies the visual 'Lo-Fi' vs. 'Hi-Fi' characteristics of the video. 
-        Measures the presence of UGC (User Generated Content) markers such as 
-        handheld camera movement, natural lighting, and native mobile aesthetics. 
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
+    VideoFeature(
+      id="shorts_production_style_index",
+      name="Production Style",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.NONE,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria="""
+        Quantifies the visual 'Lo-Fi' vs. 'Hi-Fi' characteristics of the video.
+        Measures the presence of UGC (User Generated Content) markers such as
+        handheld camera movement, natural lighting, and native mobile aesthetics.
         Assesses if the video feels like an 'organic post' or a 'produced commercial.'
     """,
-          prompt_template="""
-        Act as a professional Cinematographer and Social Media Strategist. Your goal is to 
+      prompt_template="""
+        Act as a professional Cinematographer and Social Media Strategist. Your goal is to
         quantify the 'UGC Authenticity' of the production style for this video.
         
         VIDEO METADATA: {metadata_summary}
 
         ### 1. METRIC DEFINITIONS:
-        - **Density Score:** (Duration of shots that appear native/UGC) / (Total video duration). 
+        - **Density Score:** (Duration of shots that appear native/UGC) / (Total video duration).
           Represented as density_score in the JSON.
-        - **Authenticity Rating:** (0.0 - 1.0) 1.0 = Indistinguishable from an organic user upload; 
-          0.5 = High-quality "Studio-UGC" (professional gear mimicking a mobile look); 
+        - **Authenticity Rating:** (0.0 - 1.0) 1.0 = Indistinguishable from an organic user upload;
+          0.5 = High-quality "Studio-UGC" (professional gear mimicking a mobile look);
           0.0 = Traditional high-budget glossy commercial.
 
         ### 2. PRODUCTION MARKERS:
@@ -903,7 +902,7 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
                     "start": float,
                     "end": float,
                     "style_type": "True_UGC" | "Studio_UGC" | "Corporate_Ad",
-                    "description": str 
+                    "description": str
                 }}
             ],
             "overall_assessment": {{
@@ -919,25 +918,25 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
         3. Calculate **density_score** by identifying the total runtime of "authentic-looking" footage.
         4. Lower the **Authenticity Rating** if the video uses professional motion graphics or studio-exclusive color palettes.
     """,
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
-      ),
-      VideoFeature(
-          id="shorts_sfv_adaptation_high",
-          name="Short Form Video Adaptation",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.NONE,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria="""
-            Quantifies the 'Native Emulation' of the production. Measures how effectively 
-            the video mimics organic social content through lo-fi aesthetics, handheld 
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
+    VideoFeature(
+      id="shorts_sfv_adaptation_high",
+      name="Short Form Video Adaptation",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.NONE,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria="""
+            Quantifies the 'Native Emulation' of the production. Measures how effectively
+            the video mimics organic social content through lo-fi aesthetics, handheld
             camera physics, and non-commercial editing patterns.
         """,
-          prompt_template="""
-            Act as a Social Media Trends Analyst and Video Strategist. Your goal is to 
+      prompt_template="""
+            Act as a Social Media Trends Analyst and Video Strategist. Your goal is to
             quantify the 'UGC Authenticity' of the production style.
             
             VIDEO METADATA: {metadata_summary}
@@ -949,7 +948,7 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
 
             ### 2. DENSITY & QUALITY LOGIC:
             - **Density Score:** (Duration of shots that appear native/organic) / (Total video duration).
-            - **Feature Quality Score (Authenticity):** 
+            - **Feature Quality Score (Authenticity):**
                 * 0.9-1.0: Indistinguishable from an organic user post.
                 * 0.7-0.8: High-quality Studio-UGC (mimics mobile but feels "clean").
                 * 0.4-0.6: Polished commercial with minor native elements.
@@ -958,7 +957,7 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
             ### FORMAT RESPONSE AS JSON:
             {{
                 "detected": boolean,
-                "confidence_score": float, 
+                "confidence_score": float,
                 "feature_quality_score": float, # The 0.0-1.0 Authenticity Rating
                 "metrics": {{
                     "density_score": float, # Duration of organic style / Total duration
@@ -989,25 +988,25 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
             - **The Hook:** If the first 3 seconds are "Native" in style, increase the feature_quality_score.
             - **Intent:** Distinguish between intentional Lo-Fi style and poor production quality.
         """,
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
-      ),
-      VideoFeature(
-          id="shorts_emoji_usage",
-          name="Emoji Usage",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.NONE,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria="""
-            Detects intentional creative emoji use: 1. Standard characters in text, 
-            2. Animated effects, 3. Emoji-style stickers/graphics, 
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
+    VideoFeature(
+      id="shorts_emoji_usage",
+      name="Emoji Usage",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.NONE,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria="""
+            Detects intentional creative emoji use: 1. Standard characters in text,
+            2. Animated effects, 3. Emoji-style stickers/graphics,
             4. Platform-specific features. Excludes incidental background captures.
         """,
-          prompt_template="""
-            Act as a Visual Researcher and Social Media Analyst. Your goal is to 
+      prompt_template="""
+            Act as a Visual Researcher and Social Media Analyst. Your goal is to
             identify and quantify the use of emojis as creative overlays.
             
             VIDEO METADATA: {metadata_summary}
@@ -1019,7 +1018,7 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
 
             ### 2. DENSITY & QUALITY LOGIC:
             - **Density Score:** (Sum of seconds with visible emojis) / (Total video duration).
-            - **Feature Quality Score:** 
+            - **Feature Quality Score:**
                 * 0.9-1.0: Strategic use (syncs with audio, emphasizes key points).
                 * 0.6-0.8: Moderate use, primarily decorative.
                 * 0.1-0.5: Incidental or poorly placed (covers key subjects).
@@ -1032,7 +1031,7 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
                 "feature_quality_score": float, # 0.0-1.0 based on narrative relevance
                 "metrics": {{
                     "density_score": float, # Total emoji duration / Total duration
-                    "emoji_count_estimate": int, 
+                    "emoji_count_estimate": int,
                     "style": "Static" | "Animated" | "Kinetic",
                     "placement": "Anchored_to_Text" | "Floating" | "Center_Pop"
                 }},
@@ -1059,24 +1058,24 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
             - **Placement:** Lower the quality score if emojis are in the "Dead Zone" (bottom/right where UI buttons sit).
             - **Relevance:** Higher impact if the emoji matches the spoken word or emotional tone.
         """,
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
-      ),
-      VideoFeature(
-          id="shorts_personal_character_talk",
-          name="Direct to Camera Character Talk",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.NONE,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria="""
-            Evaluates the intimacy and continuity of direct lens address. 
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
+    VideoFeature(
+      id="shorts_personal_character_talk",
+      name="Direct to Camera Character Talk",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.NONE,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria="""
+            Evaluates the intimacy and continuity of direct lens address.
             Measures the 'Breaking of the Fourth Wall' through gaze and conversational delivery.
             """,
-          prompt_template="""
-            Act as a Cinematographer and Parasocial Interaction Specialist. 
+      prompt_template="""
+            Act as a Cinematographer and Parasocial Interaction Specialist.
             Evaluate: How effectively does the character connect with the viewer via direct lens address?
 
             VIDEO METADATA: {metadata_summary}
@@ -1122,24 +1121,24 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
                     "is_hook_direct": boolean
                 }}
             }}""",
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
-      ),
-      VideoFeature(
-          id="shorts_native_brand_context",
-          name="Brand Secondary Element",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.NONE,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria="""
-            Evaluates if the brand is positioned as a secondary, natural element. 
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
+    VideoFeature(
+      id="shorts_native_brand_context",
+      name="Brand Secondary Element",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.NONE,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria="""
+            Evaluates if the brand is positioned as a secondary, natural element.
             High scores indicate the brand feels like part of the environment, not a forced ad.
             """,
-          prompt_template="""
-            Act as a Brand Integration Analyst. 
+      prompt_template="""
+            Act as a Brand Integration Analyst.
             Evaluate: Is the brand naturally secondary within the organic content?
 
             VIDEO METADATA:
@@ -1185,29 +1184,29 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
                     "is_brand_dominant": boolean # False is better for this feature
                 }}
             }}""",
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
-      ),
-      VideoFeature(
-          id="shorts_personal_character_type",
-          name="Everyday Persona Validation",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.NONE,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria="""
-            Determines if the video is led by a relatable 'everyday person' or creator. 
-            Returns negative if the character is a professional actor, celebrity, 
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
+    VideoFeature(
+      id="shorts_personal_character_type",
+      name="Everyday Persona Validation",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.NONE,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria="""
+            Determines if the video is led by a relatable 'everyday person' or creator.
+            Returns negative if the character is a professional actor, celebrity,
             or fictional/animated entity.
         """,
-          prompt_template="""
+      prompt_template="""
             Evaluate if the primary character in this ad is an 'Everyday Person'.
 
             ### DEFINITION:
-            An 'Everyday Person' is an organic creator or real user who feels 
-            unpolished and relatable. This feature is FALSE if the person is a 
+            An 'Everyday Person' is an organic creator or real user who feels
+            unpolished and relatable. This feature is FALSE if the person is a
             professional actor, a famous celebrity, or a fictional character.
 
             ### FORMAT RESPONSE AS JSON:
@@ -1227,24 +1226,24 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
                 }}
             }}
         """,
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
-      ),
-      VideoFeature(
-          id="shorts_product_context",
-          name="Secondary Product Context",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.NONE,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria="""
-            Evaluates if the product is positioned as a secondary element rather than the main focus of the ad, 
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
+    VideoFeature(
+      id="shorts_product_context",
+      name="Secondary Product Context",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.NONE,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria="""
+            Evaluates if the product is positioned as a secondary element rather than the main focus of the ad,
             appearing in a natural and realistic context.
             """,
-          prompt_template="""
-            Act as a Product Stylist and Video Analyst. 
+      prompt_template="""
+            Act as a Product Stylist and Video Analyst.
             Evaluate: Is the product used naturally as a secondary element in a realistic context?
     
             VIDEO METADATA:
@@ -1290,24 +1289,23 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
                     "is_product_secondary": boolean
                 }}
             }}""",
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
+    VideoFeature(
+      id="shorts_video_format",
+      name="Vertical Format Designed For Mobile",
+      category=VideoFeatureCategory.SHORTS,
+      sub_category=VideoFeatureSubCategory.NONE,
+      video_segment=VideoSegment.FULL_VIDEO,
+      evaluation_criteria=(
+        "Verifies 9:16 portrait ratio and detects letterboxing/pillarboxing."
       ),
-      VideoFeature(
-          id="shorts_video_format",
-          name="Vertical Format Designed For Mobile",
-          category=VideoFeatureCategory.SHORTS,
-          sub_category=VideoFeatureSubCategory.NONE,
-          video_segment=VideoSegment.FULL_VIDEO,
-          evaluation_criteria=(
-              "Verifies 9:16 portrait ratio and detects"
-              " letterboxing/pillarboxing."
-          ),
-          prompt_template="""
-            Verify if the video is optimized for mobile (9:16). 
+      prompt_template="""
+            Verify if the video is optimized for mobile (9:16).
     
             VIDEO METADATA:
             {metadata_summary}
@@ -1319,7 +1317,7 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
             {{
                 "detected": bool,
                 "confidence_score": float,
-                "feature_quality_score": float, 
+                "feature_quality_score": float,
                 "metrics": {{
                     "format": "9:16"|"1:1"|"16:9"|"mixed",
                     "is_letterboxed": bool,
@@ -1331,12 +1329,12 @@ def get_shorts_feature_configs() -> list[VideoFeature]:
                 }}
             }}
         """,
-          extra_instructions=[],
-          evaluation_method=EvaluationMethod.LLMS,
-          evaluation_function="",
-          include_in_evaluation=True,
-          group_by=VideoSegment.FULL_VIDEO,
-      ),
+      extra_instructions=[],
+      evaluation_method=EvaluationMethod.LLMS,
+      evaluation_function="",
+      include_in_evaluation=True,
+      group_by=VideoSegment.FULL_VIDEO,
+    ),
   ]
 
   return feature_configs

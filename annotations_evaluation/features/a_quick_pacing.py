@@ -22,14 +22,15 @@
 Annotations used:
     1. Shot annotations to calculate the pacing of the video
 """
-from helpers.annotations_helpers import calculate_time_seconds
-from gcp_api_services.gcs_api_service import gcs_api_service
+
 from annotations_evaluation.annotations_generation import Annotations
 from configuration import Configuration
+from helpers import gcs_utils
+from helpers.annotations_helpers import calculate_time_seconds
 
 
 def detect_quick_pacing(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> dict:
   """Detect Quick Pacing
   Args:
@@ -39,7 +40,7 @@ def detect_quick_pacing(
   Returns:
       quick_pacing: quick pacing evaluation
   """
-  quick_pacing, na = detect(config, feature_name, video_uri)
+  quick_pacing, _na = detect(config, feature_name, video_uri)
 
   print(f"{feature_name}: {quick_pacing} \n")
 
@@ -47,7 +48,7 @@ def detect_quick_pacing(
 
 
 def detect_quick_pacing_1st_5_secs(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> dict:
   """Detect Quick Pacing (First 5 seconds)
   Args:
@@ -56,7 +57,7 @@ def detect_quick_pacing_1st_5_secs(
   Returns:
       quick_pacing, quick_pacing_1st_5_secs: quick pacing evaluation
   """
-  na, quick_pacing_1st_5_secs = detect(config, feature_name, video_uri)
+  _na, quick_pacing_1st_5_secs = detect(config, feature_name, video_uri)
 
   print(f"{feature_name}: {quick_pacing_1st_5_secs} \n")
 
@@ -64,7 +65,7 @@ def detect_quick_pacing_1st_5_secs(
 
 
 def detect(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> tuple[bool, bool]:
   """Detect Quick Pacing & Quick Pacing (First 5 seconds)
   Args:
@@ -73,10 +74,8 @@ def detect(
   Returns:
       quick_pacing, quick_pacing_1st_5_secs: quick pacing evaluation
   """
-  annotation_uri = (
-      f"{gcs_api_service.get_annotation_uri(config, video_uri)}{Annotations.GENERIC_ANNOTATIONS.value}.json"
-  )
-  shot_annotation_results = gcs_api_service.load_blob(annotation_uri)
+  annotation_uri = f"{gcs_utils.get_annotation_uri(config, video_uri)}{Annotations.GENERIC_ANNOTATIONS.value}.json"
+  shot_annotation_results = gcs_utils.load_annotation_blob(annotation_uri)
 
   required_secs_for_quick_pacing = 5
   required_shots_for_quick_pacing = 5
@@ -91,9 +90,9 @@ def detect(
   # Video API: Evaluate quick_pacing_feature and quick_pacing_1st_5_secs_feature
   if "shot_annotations" in shot_annotation_results:
     sorted_shots = sorted(
-        shot_annotation_results.get("shot_annotations"),
-        key=lambda x: calculate_time_seconds(x, "start_time_offset"),
-        reverse=False,
+      shot_annotation_results.get("shot_annotations"),
+      key=lambda x: calculate_time_seconds(x, "start_time_offset"),
+      reverse=False,
     )
     # Video API: Evaluate quick_pacing_feature & quick_pacing_1st_5_secs_feature
     for shot in sorted_shots:
@@ -119,8 +118,8 @@ def detect(
         total_shots_count = 0
   else:
     print(
-        f"No Shot annotations found. Skipping {feature_name} evaluation with"
-        " Video Intelligence API."
+      f"No Shot annotations found. Skipping {feature_name} evaluation with"
+      " Video Intelligence API."
     )
 
   return quick_pacing, quick_pacing_1st_5_secs

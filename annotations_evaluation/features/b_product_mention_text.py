@@ -24,13 +24,13 @@ Annotations used:
 """
 
 from annotations_evaluation.annotations_generation import Annotations
-from gcp_api_services.gcs_api_service import gcs_api_service
-from helpers.annotations_helpers import detected_text_in_first_5_seconds
 from configuration import Configuration
+from helpers import gcs_utils
+from helpers.annotations_helpers import detected_text_in_first_5_seconds
 
 
 def detect_product_mention_text(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> bool:
   """Detect Product Mention (Text)
   Args:
@@ -40,7 +40,7 @@ def detect_product_mention_text(
   Returns:
       product_mention_text: product mention text evaluation
   """
-  product_mention_text, na = detect(config, feature_name, video_uri)
+  product_mention_text, _na = detect(config, feature_name, video_uri)
 
   print(f"{feature_name}: {product_mention_text} \n")
 
@@ -48,7 +48,7 @@ def detect_product_mention_text(
 
 
 def detect_product_mention_text_1st_5_secs(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> bool:
   """Product Mention (Text) (First 5 seconds)
   Args:
@@ -58,7 +58,7 @@ def detect_product_mention_text_1st_5_secs(
   Returns:
       product_mention_text_1st_5_secs: product mention text evaluation
   """
-  na, product_mention_text_1st_5_secs = detect(config, feature_name, video_uri)
+  _na, product_mention_text_1st_5_secs = detect(config, feature_name, video_uri)
 
   print(f"{feature_name}: {product_mention_text_1st_5_secs} \n")
 
@@ -66,7 +66,7 @@ def detect_product_mention_text_1st_5_secs(
 
 
 def detect(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> tuple[bool, bool]:
   """Detect Product Mention (Text) & Product Mention (Text) (First 5 seconds)
   Args:
@@ -78,10 +78,8 @@ def detect(
       product_mention_text_1st_5_secs: product mention text evaluation
   """
 
-  annotation_uri = (
-      f"{gcs_api_service.get_annotation_uri(config, video_uri)}{Annotations.GENERIC_ANNOTATIONS.value}.json"
-  )
-  text_annotation_results = gcs_api_service.load_blob(annotation_uri)
+  annotation_uri = f"{gcs_utils.get_annotation_uri(config, video_uri)}{Annotations.GENERIC_ANNOTATIONS.value}.json"
+  text_annotation_results = gcs_utils.load_annotation_blob(annotation_uri)
 
   # Feature Product Mention (Text)
   product_mention_text = False
@@ -95,32 +93,30 @@ def detect(
     for text_annotation in text_annotation_results.get("text_annotations"):
       text = text_annotation.get("text")
       found_branded_products = [
-          prod
-          for prod in config.branded_products
-          if prod.lower() in text.lower()
+        prod for prod in config.branded_products if prod.lower() in text.lower()
       ]
       found_branded_products_categories = [
-          prod
-          for prod in config.branded_products_categories
-          if prod.lower() in text.lower()
+        prod
+        for prod in config.branded_products_categories
+        if prod.lower() in text.lower()
       ]
       if (
-          len(found_branded_products) > 0
-          or len(found_branded_products_categories) > 0
+        len(found_branded_products) > 0
+        or len(found_branded_products_categories) > 0
       ):
         product_mention_text = True
-        pmt_1st_5_secs, frame = detected_text_in_first_5_seconds(
-            config, text_annotation
+        pmt_1st_5_secs, _frame = detected_text_in_first_5_seconds(
+          config, text_annotation
         )
         if pmt_1st_5_secs:
           product_mention_text_1st_5_secs = True
   else:
     print(
-        f"No Text annotations found. Skipping {feature_name} evaluation with"
-        " Video Intelligence API."
+      f"No Text annotations found. Skipping {feature_name} evaluation with"
+      " Video Intelligence API."
     )
 
   return (
-      product_mention_text,
-      product_mention_text_1st_5_secs,
+    product_mention_text,
+    product_mention_text_1st_5_secs,
   )

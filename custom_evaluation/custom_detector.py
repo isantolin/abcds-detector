@@ -22,7 +22,7 @@
 
 import annotations_evaluation.feature_modules as annotations_module  # Change this
 from configuration import Configuration
-from models import VideoFeature, FeatureEvaluation
+from models import FeatureEvaluation, VideoFeature
 
 
 class CustomDetector:
@@ -32,7 +32,7 @@ class CustomDetector:
     pass
 
   def evaluate_features(
-      self, config: Configuration, feature_config: VideoFeature, video_uri: str
+    self, config: Configuration, feature_config: VideoFeature, video_uri: str
   ) -> list[FeatureEvaluation]:
     """Evaluates ABCD features using custom functions."""
 
@@ -47,13 +47,13 @@ class CustomDetector:
 
     if isinstance(evaluation, bool):
       feature_evaluation = {
-          "id": feature_config.id,
-          "detected": evaluation,
-          "confidence_score": 1,  # TODO (ae) calculate this for annotations
-          "rationale": "",
-          "evidence": "",
-          "strengths": "",
-          "weaknesses": "",
+        "id": feature_config.id,
+        "detected": evaluation,
+        "confidence_score": 1,  # TODO (ae) calculate this for annotations
+        "rationale": "",
+        "evidence": "",
+        "strengths": "",
+        "weaknesses": "",
       }
     else:
       # TODO (ae) add details about the interface returned here

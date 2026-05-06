@@ -24,14 +24,14 @@ Annotations used:
 """
 
 from annotations_evaluation.annotations_generation import Annotations
-from gcp_api_services.gcs_api_service import gcs_api_service
+from configuration import Configuration
+from helpers import gcs_utils
 from helpers.annotations_helpers import calculate_time_seconds
 from helpers.generic_helpers import get_knowledge_graph_entities
-from configuration import Configuration
 
 
 def detect_product_visuals(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> bool:
   """Detect Product Visuals
   Args:
@@ -40,7 +40,7 @@ def detect_product_visuals(
   Returns:
       product_visuals: product visuals evaluation
   """
-  product_visuals, na = detect(config, feature_name, video_uri)
+  product_visuals, _na = detect(config, feature_name, video_uri)
 
   print(f"{feature_name}: {product_visuals} \n")
 
@@ -48,7 +48,7 @@ def detect_product_visuals(
 
 
 def detect_product_visuals_1st_5_secs(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> bool:
   """Detect Product Visuals (First 5 seconds)
   Args:
@@ -57,7 +57,7 @@ def detect_product_visuals_1st_5_secs(
   Returns:
       product_visuals_1st_5_secs: product visuals evaluation
   """
-  na, product_visuals_1st_5_secs = detect(config, feature_name, video_uri)
+  _na, product_visuals_1st_5_secs = detect(config, feature_name, video_uri)
 
   print(f"{feature_name}: {product_visuals_1st_5_secs} \n")
 
@@ -65,12 +65,12 @@ def detect_product_visuals_1st_5_secs(
 
 
 def detect_annotation(
-    config: Configuration,
-    entity: dict,
-    segment: dict,
-    branded_products_kg_entities: dict,
-    branded_products: list[str],
-    branded_products_categories: list[str],
+  config: Configuration,
+  entity: dict,
+  segment: dict,
+  branded_products_kg_entities: dict,
+  branded_products: list[str],
+  branded_products_categories: list[str],
 ):
   """Detect Product Visuals & Product Visuals (First 5 seconds)
   Args:
@@ -91,23 +91,23 @@ def detect_annotation(
   # Check if any of the provided products or categories
   # match the label segment description
   found_branded_products = [
-      bp for bp in branded_products if bp.lower() == entity_description.lower()
+    bp for bp in branded_products if bp.lower() == entity_description.lower()
   ]
   found_branded_product_categories = [
-      bp
-      for bp in branded_products_categories
-      if bp.lower() == entity_description.lower()
+    bp
+    for bp in branded_products_categories
+    if bp.lower() == entity_description.lower()
   ]
   if (
-      entity_id in branded_products_kg_entities
-      or len(found_branded_products) > 0
-      or len(found_branded_product_categories) > 0
+    entity_id in branded_products_kg_entities
+    or len(found_branded_products) > 0
+    or len(found_branded_product_categories) > 0
   ):
     # Check confidence against user defined threshold
     if segment.get("confidence") >= config.confidence_threshold:
       product_visuals = True
       start_time_secs = calculate_time_seconds(
-          segment.get("segment"), "start_time_offset"
+        segment.get("segment"), "start_time_offset"
       )
       if start_time_secs <= config.early_time_seconds:
         product_visuals_1st_5_secs = True
@@ -116,7 +116,7 @@ def detect_annotation(
 
 
 def detect(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> tuple[bool, bool]:
   """Detect Product Visuals & Product Visuals (First 5 seconds)
   Args:
@@ -127,10 +127,8 @@ def detect(
       product_visuals_1st_5_secs: product visuals evaluation
   """
 
-  annotation_uri = (
-      f"{gcs_api_service.get_annotation_uri(config, video_uri)}{Annotations.GENERIC_ANNOTATIONS.value}.json"
-  )
-  label_annotation_results = gcs_api_service.load_blob(annotation_uri)
+  annotation_uri = f"{gcs_utils.get_annotation_uri(config, video_uri)}{Annotations.GENERIC_ANNOTATIONS.value}.json"
+  label_annotation_results = gcs_utils.load_annotation_blob(annotation_uri)
 
   # Feature Product Visuals
   product_visuals = False
@@ -139,7 +137,7 @@ def detect(
   product_visuals_1st_5_secs = False
 
   branded_products_kg_entities = get_knowledge_graph_entities(
-      config, config.branded_products
+    config, config.branded_products
   )
 
   # Video API: Evaluate product_visuals_feature and product_visuals_1st_5_secs_feature
@@ -147,16 +145,16 @@ def detect(
   if "segment_label_annotations" in label_annotation_results:
     # Process video/segment level label annotations
     for segment_label in label_annotation_results.get(
-        "segment_label_annotations"
+      "segment_label_annotations"
     ):
       for segment in segment_label.get("segments"):
         pv, pv_1st_5_secs = detect_annotation(
-            config,
-            segment_label.get("entity"),
-            segment,
-            branded_products_kg_entities,
-            config.branded_products,
-            config.branded_products_categories,
+          config,
+          segment_label.get("entity"),
+          segment,
+          branded_products_kg_entities,
+          config.branded_products,
+          config.branded_products_categories,
         )
         if pv:
           product_visuals = True
@@ -164,8 +162,8 @@ def detect(
           product_visuals_1st_5_secs = True
   else:
     print(
-        f"No Segment Label annotations found. Skipping {feature_name} Segment"
-        " Label evaluation with Video Intelligence API."
+      f"No Segment Label annotations found. Skipping {feature_name} Segment"
+      " Label evaluation with Video Intelligence API."
     )
 
   # Check in annotations at shot level
@@ -174,12 +172,12 @@ def detect(
     for shot_label in label_annotation_results.get("shot_label_annotations"):
       for segment in shot_label.get("segments"):
         pv, pv_1st_5_secs = detect_annotation(
-            config,
-            shot_label.get("entity"),
-            segment,
-            branded_products_kg_entities,
-            config.branded_products,
-            config.branded_products_categories,
+          config,
+          shot_label.get("entity"),
+          segment,
+          branded_products_kg_entities,
+          config.branded_products,
+          config.branded_products_categories,
         )
         if pv:
           product_visuals = True
@@ -187,8 +185,8 @@ def detect(
           product_visuals_1st_5_secs = True
   else:
     print(
-        f"No Shot Label annotations found. Skipping {feature_name} Shot Label"
-        " evaluation with Video Intelligence API."
+      f"No Shot Label annotations found. Skipping {feature_name} Shot Label"
+      " evaluation with Video Intelligence API."
     )
 
   # Check in annotations at frame level
@@ -197,12 +195,12 @@ def detect(
     for frame_label in label_annotation_results.get("frame_label_annotations"):
       for frame in frame_label.get("frames"):
         pv, pv_1st_5_secs = detect_annotation(
-            config,
-            frame_label.get("entity"),
-            frame,
-            branded_products_kg_entities,
-            config.branded_products,
-            config.branded_products_categories,
+          config,
+          frame_label.get("entity"),
+          frame,
+          branded_products_kg_entities,
+          config.branded_products,
+          config.branded_products_categories,
         )
         if pv:
           product_visuals = True
@@ -210,8 +208,8 @@ def detect(
           product_visuals_1st_5_secs = True
   else:
     print(
-        f"No Frame Label annotations found. Skipping {feature_name} Frame Label"
-        " evaluation with Video Intelligence API."
+      f"No Frame Label annotations found. Skipping {feature_name} Frame Label"
+      " evaluation with Video Intelligence API."
     )
 
   return product_visuals, product_visuals_1st_5_secs

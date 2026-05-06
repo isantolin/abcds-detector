@@ -21,8 +21,8 @@
 """Module to evaluate features for ABCDs using annotations."""
 
 import annotations_evaluation.feature_modules as annotations_module
-from features_repository.long_form_abcd_features import get_feature_configs
 from configuration import Configuration
+from features_repository.long_form_abcd_features import get_feature_configs
 
 
 class AnnotationsDectector:
@@ -32,7 +32,7 @@ class AnnotationsDectector:
     pass
 
   def evaluate_abcd_features_using_annotations(
-      self, config: Configuration, video_uri: str
+    self, config: Configuration, video_uri: str
   ) -> list[dict]:
     """Evaluates ABCD features using annotations."""
 
@@ -44,7 +44,7 @@ class AnnotationsDectector:
     # Process annotations for all features
     for feature_config in feature_configs:
       print(
-          f"Annotation evaluation for feature {feature_config.get('name')}..."
+        f"Annotation evaluation for feature {feature_config.get('name')}..."
       )
       function_name = feature_config.get("annotations_function")
       detected = False
@@ -52,10 +52,10 @@ class AnnotationsDectector:
         func = getattr(annotations_module, function_name)
         detected = func(config, feature_config.get("name"), video_uri)
         feature_evaluations.append({
-            "id": feature_config.get("id"),
-            "name": feature_config.get("name"),
-            "category": feature_config.get("category"),
-            "criteria": feature_config.get("criteria"),
-            "detected": detected,
+          "id": feature_config.get("id"),
+          "name": feature_config.get("name"),
+          "category": feature_config.get("category"),
+          "criteria": feature_config.get("criteria"),
+          "detected": detected,
         })
     return feature_evaluations
