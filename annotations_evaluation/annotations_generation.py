@@ -29,182 +29,174 @@ from google.cloud.videointelligence import VideoContext
 from configuration import Configuration
 from helpers import gcs_utils
 from helpers.generic_helpers import (
-  execute_tasks_in_parallel,
+    execute_tasks_in_parallel,
 )
 
 
 class Annotations(Enum):
-  """Annotation types enum"""
+    """Annotation types enum"""
 
-  GENERIC_ANNOTATIONS = "generic_annotations"
-  FACE_ANNOTATIONS = "face_annotations"
-  PEOPLE_ANNOTATIONS = "people_annotations"
-  SPEECH_ANNOTATIONS = "speech_annotations"
+    GENERIC_ANNOTATIONS = "generic_annotations"
+    FACE_ANNOTATIONS = "face_annotations"
+    PEOPLE_ANNOTATIONS = "people_annotations"
+    SPEECH_ANNOTATIONS = "speech_annotations"
 
 
 def standard_annotations_detection(
-  video_client: videointelligence.VideoIntelligenceServiceClient,
-  video_uri: str,
-  annotations_uri: str,
+    video_client: videointelligence.VideoIntelligenceServiceClient,
+    video_uri: str,
+    annotations_uri: str,
 ) -> None:
-  """Detect the following standard annotations: Text, Shot, Logo and Label"""
-  features = [
-    videointelligence.Feature.TEXT_DETECTION,
-    videointelligence.Feature.SHOT_CHANGE_DETECTION,
-    videointelligence.Feature.LOGO_RECOGNITION,
-    videointelligence.Feature.LABEL_DETECTION,
-  ]
-  operation = video_client.annotate_video(
-    request={
-      "features": features,
-      "input_uri": video_uri,
-      "output_uri": annotations_uri,
-    }
-  )
-  print(f"\nProcessing video {video_uri} for {features!s} annotations...")
-  operation.result(timeout=800)
-  print(
-    f"\nFinished processing video {video_uri} for {features!s} annotations...\n"
-  )
+    """Detect the following standard annotations: Text, Shot, Logo and Label"""
+    features = [
+        videointelligence.Feature.TEXT_DETECTION,
+        videointelligence.Feature.SHOT_CHANGE_DETECTION,
+        videointelligence.Feature.LOGO_RECOGNITION,
+        videointelligence.Feature.LABEL_DETECTION,
+    ]
+    operation = video_client.annotate_video(
+        request={
+            "features": features,
+            "input_uri": video_uri,
+            "output_uri": annotations_uri,
+        }
+    )
+    print(f"\nProcessing video {video_uri} for {features!s} annotations...")
+    operation.result(timeout=800)
+    print(f"\nFinished processing video {video_uri} for {features!s} annotations...\n")
 
 
 def custom_annotations_detection(
-  video_client: videointelligence.VideoIntelligenceServiceClient,
-  context: VideoContext,
-  features: list[videointelligence.Feature],
-  video_uri: str,
-  annotations_uri: str,
+    video_client: videointelligence.VideoIntelligenceServiceClient,
+    context: VideoContext,
+    features: list[videointelligence.Feature],
+    video_uri: str,
+    annotations_uri: str,
 ) -> None:
-  """Detect the following custom annotations: Face, People and Speech"""
+    """Detect the following custom annotations: Face, People and Speech"""
 
-  operation = video_client.annotate_video(
-    request={
-      "features": features,
-      "input_uri": video_uri,
-      "video_context": context,
-      "output_uri": annotations_uri,
-    }
-  )
-  print(f"\nProcessing video {video_uri} for {features!s} annotations...")
-  operation.result(timeout=800)
-  print(
-    f"\nFinished processing video {video_uri} for {features!s} annotations...\n"
-  )
+    operation = video_client.annotate_video(
+        request={
+            "features": features,
+            "input_uri": video_uri,
+            "video_context": context,
+            "output_uri": annotations_uri,
+        }
+    )
+    print(f"\nProcessing video {video_uri} for {features!s} annotations...")
+    operation.result(timeout=800)
+    print(f"\nFinished processing video {video_uri} for {features!s} annotations...\n")
 
 
 def generate_video_annotations(config: Configuration, video_uri: str) -> None:
-  """Generates video annotations for videos in Google Cloud Storage"""
+    """Generates video annotations for videos in Google Cloud Storage"""
 
-  standard_video_client = videointelligence.VideoIntelligenceServiceClient()
-  custom_video_client = videointelligence2.VideoIntelligenceServiceClient()
+    standard_video_client = videointelligence.VideoIntelligenceServiceClient()
+    custom_video_client = videointelligence2.VideoIntelligenceServiceClient()
 
-  # Face Detection
-  face_config = videointelligence.FaceDetectionConfig(
-    include_bounding_boxes=True, include_attributes=True
-  )
-  face_context = videointelligence.VideoContext(
-    face_detection_config=face_config
-  )
-
-  # People Detection
-  person_config = videointelligence2.types.PersonDetectionConfig(
-    include_bounding_boxes=True,
-    include_attributes=True,
-    include_pose_landmarks=True,
-  )
-  person_context = videointelligence2.types.VideoContext(
-    person_detection_config=person_config
-  )
-
-  # Speech Detection
-  speech_config = videointelligence.SpeechTranscriptionConfig(
-    language_code="en-US", enable_automatic_punctuation=True
-  )
-  speech_context = videointelligence.VideoContext(
-    speech_transcription_config=speech_config
-  )
-
-  # Video annotations processing
-
-  tasks = []
-  annotation_uri = gcs_utils.get_annotation_uri(config, video_uri)
-
-  standard_annotations_uri = (
-    f"{annotation_uri}{Annotations.GENERIC_ANNOTATIONS.value}.json"
-  )
-  standard_annotations_blob = gcs_utils.get_blob(standard_annotations_uri)
-  face_annotations_uri = (
-    f"{annotation_uri}{Annotations.FACE_ANNOTATIONS.value}.json"
-  )
-  face_annotations_blob = gcs_utils.get_blob(face_annotations_uri)
-  people_annotations_uri = (
-    f"{annotation_uri}{Annotations.PEOPLE_ANNOTATIONS.value}.json"
-  )
-  people_annotations_blob = gcs_utils.get_blob(people_annotations_uri)
-  speech_annotations_uri = (
-    f"{annotation_uri}{Annotations.SPEECH_ANNOTATIONS.value}.json"
-  )
-  speech_annotations_blob = gcs_utils.get_blob(speech_annotations_uri)
-
-  # Detect Standard annotations & Custom annotations
-  if not standard_annotations_blob:
-    tasks.append(
-      lambda: standard_annotations_detection(
-        standard_video_client, video_uri, standard_annotations_uri
-      ),
+    # Face Detection
+    face_config = videointelligence.FaceDetectionConfig(
+        include_bounding_boxes=True, include_attributes=True
     )
-  else:
-    print(
-      f"Text, Shot, Logo and Label annotations for video {video_uri} already"
-      " exist, API request skipped.\n"
+    face_context = videointelligence.VideoContext(face_detection_config=face_config)
+
+    # People Detection
+    person_config = videointelligence2.types.PersonDetectionConfig(
+        include_bounding_boxes=True,
+        include_attributes=True,
+        include_pose_landmarks=True,
     )
-  if not face_annotations_blob:
-    tasks.append(
-      lambda: custom_annotations_detection(
-        standard_video_client,
-        face_context,
-        [videointelligence.Feature.FACE_DETECTION],
-        video_uri,
-        face_annotations_uri,
-      )
-    )
-  else:
-    print(
-      f"Face annotations for video {video_uri} already exist, API request"
-      " skipped.\n"
+    person_context = videointelligence2.types.VideoContext(
+        person_detection_config=person_config
     )
 
-  if not people_annotations_blob:
-    tasks.append(
-      lambda: custom_annotations_detection(
-        custom_video_client,
-        person_context,
-        [videointelligence2.Feature.PERSON_DETECTION],
-        video_uri,
-        people_annotations_uri,
-      )
+    # Speech Detection
+    speech_config = videointelligence.SpeechTranscriptionConfig(
+        language_code="en-US", enable_automatic_punctuation=True
     )
-  else:
-    print(
-      f"People annotations for video {video_uri} already exist, API request"
-      " skipped.\n"
+    speech_context = videointelligence.VideoContext(
+        speech_transcription_config=speech_config
     )
 
-  if not speech_annotations_blob:
-    tasks.append(
-      lambda: custom_annotations_detection(
-        standard_video_client,
-        speech_context,
-        [videointelligence.Feature.SPEECH_TRANSCRIPTION],
-        video_uri,
-        speech_annotations_uri,
-      )
-    )
-  else:
-    print(
-      f"Speech annotations for video {video_uri} already exist, API request"
-      " skipped.\n"
-    )
+    # Video annotations processing
 
-  # Execute annotations generation tasks only for the ones that haven't been processed.
-  execute_tasks_in_parallel(tasks)
+    tasks = []
+    annotation_uri = gcs_utils.get_annotation_uri(config, video_uri)
+
+    standard_annotations_uri = (
+        f"{annotation_uri}{Annotations.GENERIC_ANNOTATIONS.value}.json"
+    )
+    standard_annotations_blob = gcs_utils.get_blob(standard_annotations_uri)
+    face_annotations_uri = f"{annotation_uri}{Annotations.FACE_ANNOTATIONS.value}.json"
+    face_annotations_blob = gcs_utils.get_blob(face_annotations_uri)
+    people_annotations_uri = (
+        f"{annotation_uri}{Annotations.PEOPLE_ANNOTATIONS.value}.json"
+    )
+    people_annotations_blob = gcs_utils.get_blob(people_annotations_uri)
+    speech_annotations_uri = (
+        f"{annotation_uri}{Annotations.SPEECH_ANNOTATIONS.value}.json"
+    )
+    speech_annotations_blob = gcs_utils.get_blob(speech_annotations_uri)
+
+    # Detect Standard annotations & Custom annotations
+    if not standard_annotations_blob:
+        tasks.append(
+            lambda: standard_annotations_detection(
+                standard_video_client, video_uri, standard_annotations_uri
+            ),
+        )
+    else:
+        print(
+            f"Text, Shot, Logo and Label annotations for video {video_uri} already"
+            " exist, API request skipped.\n"
+        )
+    if not face_annotations_blob:
+        tasks.append(
+            lambda: custom_annotations_detection(
+                standard_video_client,
+                face_context,
+                [videointelligence.Feature.FACE_DETECTION],
+                video_uri,
+                face_annotations_uri,
+            )
+        )
+    else:
+        print(
+            f"Face annotations for video {video_uri} already exist, API request"
+            " skipped.\n"
+        )
+
+    if not people_annotations_blob:
+        tasks.append(
+            lambda: custom_annotations_detection(
+                custom_video_client,
+                person_context,
+                [videointelligence2.Feature.PERSON_DETECTION],
+                video_uri,
+                people_annotations_uri,
+            )
+        )
+    else:
+        print(
+            f"People annotations for video {video_uri} already exist, API request"
+            " skipped.\n"
+        )
+
+    if not speech_annotations_blob:
+        tasks.append(
+            lambda: custom_annotations_detection(
+                standard_video_client,
+                speech_context,
+                [videointelligence.Feature.SPEECH_TRANSCRIPTION],
+                video_uri,
+                speech_annotations_uri,
+            )
+        )
+    else:
+        print(
+            f"Speech annotations for video {video_uri} already exist, API request"
+            " skipped.\n"
+        )
+
+    # Execute annotations generation tasks only for the ones that haven't been processed.
+    execute_tasks_in_parallel(tasks)

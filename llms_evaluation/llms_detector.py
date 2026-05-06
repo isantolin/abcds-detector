@@ -57,14 +57,10 @@ def _get_modality_params(prompt: str, params: LLMParameters) -> list[any]:
             file_uri=params.modality["video_uri"], mime_type=mime_type
         )
         return [
-            types.Content(
-                role="user", parts=[video, types.Part.from_text(text=prompt)]
-            )
+            types.Content(role="user", parts=[video, types.Part.from_text(text=prompt)])
         ]
     elif params.modality["type"] == "text":
-        return [
-            types.Content(role="user", parts=[types.Part.from_text(text=prompt)])
-        ]
+        return [types.Content(role="user", parts=[types.Part.from_text(text=prompt)])]
     return []
 
 
@@ -86,9 +82,7 @@ def execute_gemini(
                 temperature=llm_params.generation_config.get("temperature"),
                 top_p=llm_params.generation_config.get("top_p"),
                 seed=0,
-                max_output_tokens=llm_params.generation_config.get(
-                    "max_output_tokens"
-                ),
+                max_output_tokens=llm_params.generation_config.get("max_output_tokens"),
                 response_modalities=["TEXT"],
                 safety_settings=[
                     types.SafetySetting(
@@ -157,9 +151,7 @@ def execute_gemini(
                 wait = 10 * 2**this_retry
                 time.sleep(wait)
             else:
-                print(
-                    f"ERROR: the following issue can't be retried: {error_message}\n"
-                )
+                print(f"ERROR: the following issue can't be retried: {error_message}\n")
                 raise
     return ""
 
@@ -197,17 +189,13 @@ def evaluate_features(
     except (json.JSONDecodeError, TypeError):
         evaluated_features = []
 
-    if config.verbose and (
-        not evaluated_features or len(evaluated_features) == 0
-    ):
+    if config.verbose and (not evaluated_features or len(evaluated_features) == 0):
         print(
             "WARNING: ABCD Detector was not able to process features for "
             f"video {evaluation_details.get('video_uri')}... \n"
         )
 
-    return (
-        evaluated_features if isinstance(evaluated_features, list) else []
-    )
+    return evaluated_features if isinstance(evaluated_features, list) else []
 
 
 def get_video_metadata(config: Configuration, video_uri: str) -> dict:
@@ -223,9 +211,7 @@ def get_video_metadata(config: Configuration, video_uri: str) -> dict:
     # Set modality for API
     llm_params.set_modality({"type": "video", "video_uri": video_uri})
     # Set the required schema for the LLM response
-    llm_params.generation_config["response_schema"] = (
-        VIDEO_METADATA_RESPONSE_SCHEMA
-    )
+    llm_params.generation_config["response_schema"] = VIDEO_METADATA_RESPONSE_SCHEMA
 
     response = execute_gemini(config.project_id, prompt_config, llm_params)
 

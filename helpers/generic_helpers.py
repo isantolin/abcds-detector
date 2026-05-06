@@ -68,14 +68,10 @@ def get_knowledge_graph_entities(
                 kg_entity_name = element["result"]["name"]
                 # To only add the exact KG entity
                 if query.lower() == kg_entity_name.lower():
-                    kg_entities[element["result"]["@id"][3:]] = element[
-                        "result"
-                    ]
+                    kg_entities[element["result"]["@id"][3:]] = element["result"]
         return kg_entities
     except Exception:
-        logger.exception(
-            "There was an error fetching the Knowledge Graph entities."
-        )
+        logger.exception("There was an error fetching the Knowledge Graph entities.")
         raise
 
 
@@ -93,9 +89,7 @@ def trim_video(config: Configuration, video_uri: str):
         config: all the parameters
         video_uri: the video to trim the length for
     """
-    reduced_uri = gcs_utils.get_reduced_uri(
-        config, video_uri
-    )
+    reduced_uri = gcs_utils.get_reduced_uri(config, video_uri)
     reduced_blob = gcs_utils.get_blob(reduced_uri)
     print(f"REDUCED: {reduced_uri} \n")
     if reduced_blob is None:
@@ -107,10 +101,7 @@ def trim_video(config: Configuration, video_uri: str):
             if blob:
                 f.write(blob.download_as_string(client=None))
             else:
-                msg = (
-                    f"Video URI: {video_uri} does not exist. "
-                    "Skipping execution."
-                )
+                msg = f"Video URI: {video_uri} does not exist. " "Skipping execution."
                 logger.error(msg)
                 raise ValueError(msg)
 
@@ -120,9 +111,7 @@ def trim_video(config: Configuration, video_uri: str):
         clip.write_videofile(FFMPEG_BUFFER_REDUCED)
 
         # upload
-        gcs_utils.upload_annotation_blob(
-            reduced_uri, FFMPEG_BUFFER_REDUCED
-        )
+        gcs_utils.upload_annotation_blob(reduced_uri, FFMPEG_BUFFER_REDUCED)
 
     else:
         print(f"Video {video_uri} has already been trimmed. Skipping...\n")
@@ -153,9 +142,9 @@ def print_score_details(
 ) -> None:
     """Print score details"""
     total_features = len(evaluated_features)
-    total_features_detected = len([
-        feature for feature in evaluated_features if feature.detected
-    ])
+    total_features_detected = len(
+        [feature for feature in evaluated_features if feature.detected]
+    )
     score = calculate_score(evaluated_features)
     print(
         f"Video score: {round(score, 2)}%, adherence"
@@ -242,9 +231,7 @@ def calculate_score(
             passed_features_count += 1
     # Get score
     score = (
-        ((passed_features_count * 100) / total_features)
-        if total_features > 0
-        else 0
+        ((passed_features_count * 100) / total_features) if total_features > 0 else 0
     )
     return score
 
@@ -360,8 +347,8 @@ def update_annotations_evaluated_features(
             )
             if feature_found:
                 feature_found["using_annotations"] = True
-                feature_found["annotations_evaluation"] = (
-                    annotations_eval_feature.get("detected")
+                feature_found["annotations_evaluation"] = annotations_eval_feature.get(
+                    "detected"
                 )
             else:
                 print(
@@ -370,10 +357,7 @@ def update_annotations_evaluated_features(
                     "Skipping from storing it in BQ. \n"
                 )
     else:
-        print(
-            "No annotations_evaluation found. Skipping from storing it in BQ."
-            " \n"
-        )
+        print("No annotations_evaluation found. Skipping from storing it in BQ." " \n")
 
 
 def update_llms_evaluated_features(
@@ -393,9 +377,7 @@ def update_llms_evaluated_features(
 
             if feature_found:
                 feature_found["using_llms"] = True
-                feature_found["llms_evaluation"] = llms_eval_feature.get(
-                    "detected"
-                )
+                feature_found["llms_evaluation"] = llms_eval_feature.get("detected")
                 feature_found["llm_explanation"] = llms_eval_feature.get(
                     "llm_explanation"
                 )
@@ -433,11 +415,11 @@ def store_in_bq(
             # columns in the DataFrame.
             columns=columns,
         )
-        
+
         client = bigquery.Client(project=config.project_id)
         full_dataset_name = f"{config.project_id}.{config.bq_dataset_name}"
         full_table_name = f"{full_dataset_name}.{config.bq_table_name}"
-        
+
         # Create dataset
         dataset = bigquery.Dataset(full_dataset_name)
         dataset.location = config.project_zone
@@ -445,8 +427,8 @@ def store_in_bq(
             client.create_dataset(dataset, timeout=30)
             print(f"The dataset {full_dataset_name} was successfully created. \n")
         except cloud_exceptions.Conflict:
-            pass # Dataset already exists
-            
+            pass  # Dataset already exists
+
         # Create table
         schema = get_table_schema()
         table = bigquery.Table(full_table_name, schema=schema)
@@ -454,8 +436,8 @@ def store_in_bq(
             client.create_table(table)
             print(f"The table {full_table_name} was successfully created. \n")
         except cloud_exceptions.Conflict:
-            pass # Table already exists
-            
+            pass  # Table already exists
+
         # Load data
         print(f"Inserting {len(assessment_bq)} rows into BQ... \n")
         job_config = bigquery.LoadJobConfig(
@@ -479,18 +461,12 @@ def build_features_for_bq(
     """Builds features schema with values and default values for table in BQ"""
     assessment_bq = []
     evaluated_features = []
-    evaluated_features.extend(
-        video_assessment.long_form_abcd_evaluated_features
-    )
+    evaluated_features.extend(video_assessment.long_form_abcd_evaluated_features)
     evaluated_features.extend(video_assessment.shorts_evaluated_features)
     # Insert all feature configs first
     for eval_feature in evaluated_features:
         if config.creative_provider_type == models.CreativeProviderType:
-            video_name = (
-                gcs_utils.get_video_name_from_uri(
-                    video_assessment.video_uri
-                )
-            )
+            video_name = gcs_utils.get_video_name_from_uri(video_assessment.video_uri)
         else:
             video_name = video_assessment.video_uri
         # Get Category
@@ -504,40 +480,42 @@ def build_features_for_bq(
         else:
             sub_category = eval_feature.feature.sub_category
 
-        assessment_bq.append({
-            "execution_timestamp": datetime.datetime.now(
-                datetime.UTC
-            ),
-            "brand_name": video_assessment.brand_name,
-            "video_id": video_assessment.video_uri,
-            "video_name": video_name,
-            "video_uri": video_assessment.video_uri,
-            "feature_id": eval_feature.feature.id,
-            "feature_name": eval_feature.feature.name,
-            "feature_category": category,
-            "feature_sub_category": sub_category,
-            "feature_video_segment": eval_feature.feature.video_segment.value,
-            "feature_evaluation_criteria": (
-                eval_feature.feature.evaluation_criteria
-            ),
-            "detected": eval_feature.detected,
-            "confidence_score": str(
-                eval_feature.confidence_score
-            ),  # TODO (ae) convert to str for now to avoid pandas issue
-            "evidence": eval_feature.evidence,
-            "rationale": eval_feature.rationale,
-            "strengths": eval_feature.strengths,
-            "weaknesses": eval_feature.weaknesses,
-            "brand_metadata": str({
-                "brand_name": config.brand_name,
-                "brand_variations": ",".join(config.brand_variations),
-                "branded_products": ",".join(config.branded_products),
-                "branded_product_categories": ",".join(
-                    config.branded_products_categories
+        assessment_bq.append(
+            {
+                "execution_timestamp": datetime.datetime.now(datetime.UTC),
+                "brand_name": video_assessment.brand_name,
+                "video_id": video_assessment.video_uri,
+                "video_name": video_name,
+                "video_uri": video_assessment.video_uri,
+                "feature_id": eval_feature.feature.id,
+                "feature_name": eval_feature.feature.name,
+                "feature_category": category,
+                "feature_sub_category": sub_category,
+                "feature_video_segment": eval_feature.feature.video_segment.value,
+                "feature_evaluation_criteria": (
+                    eval_feature.feature.evaluation_criteria
                 ),
-            }),
-            "config": str(config.__dict__),
-        })
+                "detected": eval_feature.detected,
+                "confidence_score": str(
+                    eval_feature.confidence_score
+                ),  # TODO (ae) convert to str for now to avoid pandas issue
+                "evidence": eval_feature.evidence,
+                "rationale": eval_feature.rationale,
+                "strengths": eval_feature.strengths,
+                "weaknesses": eval_feature.weaknesses,
+                "brand_metadata": str(
+                    {
+                        "brand_name": config.brand_name,
+                        "brand_variations": ",".join(config.brand_variations),
+                        "branded_products": ",".join(config.branded_products),
+                        "branded_product_categories": ",".join(
+                            config.branded_products_categories
+                        ),
+                    }
+                ),
+                "config": str(config.__dict__),
+            }
+        )
     return assessment_bq
 
 
