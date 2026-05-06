@@ -20,17 +20,19 @@
 
 """Module with the supported ABCD feature configurations"""
 
-import logging
 
 import models
 from features_repository.long_form_abcd_features import (
     get_long_form_abcd_feature_configs,
 )
 from features_repository.shorts_features import get_shorts_feature_configs
+from helpers.logger import get_logger
 from models import (
     VideoFeature,
     VideoFeatureCategory,
 )
+
+logger = get_logger(__name__)
 
 
 class FeaturesConfigsHandler:
@@ -53,9 +55,11 @@ class FeaturesConfigsHandler:
 
             return long_form_abcd_features
         else:
-            logging.log("Category %s not supported. Please check", category)
+            logger.log("Category %s not supported. Please check", category)
 
-    def change_evaluation_method_to_llms_only(self, features: list[VideoFeature]):
+    def change_evaluation_method_to_llms_only(
+        self, features: list[VideoFeature]
+    ):
         """Change features evaluation method to use LLMs"""
         for feature in features:
             feature.evaluation_method = models.EvaluationMethod.LLMS
@@ -76,7 +80,9 @@ class FeaturesConfigsHandler:
         """Gets all feature configs for Full ABCD and Shorts"""
         feature_configs = []
         feature_configs.extend(
-            self.get_feature_configs_by_category(VideoFeatureCategory.LONG_FORM_ABCD)
+            self.get_feature_configs_by_category(
+                VideoFeatureCategory.LONG_FORM_ABCD
+            )
         )
         feature_configs.extend(
             self.get_feature_configs_by_category(VideoFeatureCategory.SHORTS)
@@ -87,7 +93,9 @@ class FeaturesConfigsHandler:
     def get_feature_by_id(self, feature_id: str):
         """Gets a feature by id"""
         feature_configs = self.get_all_features()
-        feature = [feature for feature in feature_configs if feature.id == feature_id]
+        feature = [
+            feature for feature in feature_configs if feature.id == feature_id
+        ]
         if len(feature) > 0:
             return feature[0]
 

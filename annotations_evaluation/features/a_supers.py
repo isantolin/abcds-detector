@@ -30,97 +30,99 @@ from helpers import gcs_utils
 from helpers.annotations_helpers import find_elements_in_transcript
 
 
-def detect_supers(config: Configuration, feature_name: str, video_uri: str) -> bool:
-    """Detect Supers
-    Args:
-        feature_name: the name of the feature
-        video_uri: video location in gcs
-    Returns:
-        supers: supers evaluation
-    """
+def detect_supers(
+  config: Configuration, feature_name: str, video_uri: str
+) -> bool:
+  """Detect Supers
+  Args:
+      feature_name: the name of the feature
+      video_uri: video location in gcs
+  Returns:
+      supers: supers evaluation
+  """
 
-    annotation_uri = (
-        f"{gcs_utils.get_annotation_uri(config, video_uri)}"
-        f"{Annotations.GENERIC_ANNOTATIONS.value}.json"
+  annotation_uri = (
+    f"{gcs_utils.get_annotation_uri(config, video_uri)}"
+    f"{Annotations.GENERIC_ANNOTATIONS.value}.json"
+  )
+  text_annotation_results = gcs_utils.load_annotation_blob(annotation_uri)
+
+  # Feature Supers
+  supers = False
+
+  # Video API: Evaluate supers_feature
+  if "text_annotations" in text_annotation_results:
+    if len(text_annotation_results.get("text_annotations")) > 0:
+      supers = True
+  else:
+    print(
+      f"No Text annotations found. Skipping {feature_name} evaluation "
+      "with Video Intelligence API."
     )
-    text_annotation_results = gcs_utils.load_annotation_blob(annotation_uri)
 
-    # Feature Supers
-    supers = False
+  print(f"{feature_name}: {supers} \n")
 
-    # Video API: Evaluate supers_feature
-    if "text_annotations" in text_annotation_results:
-        if len(text_annotation_results.get("text_annotations")) > 0:
-            supers = True
-    else:
-        print(
-            f"No Text annotations found. Skipping {feature_name} evaluation "
-            "with Video Intelligence API."
-        )
-
-    print(f"{feature_name}: {supers} \n")
-
-    return supers
+  return supers
 
 
 def detect_supers_with_audio(
-    config: Configuration, feature_name: str, video_uri: str
+  config: Configuration, feature_name: str, video_uri: str
 ) -> bool:
-    """Detect Supers with Audio
-    Args:
-        feature_name: the name of the feature
-        video_uri: video location in gcs
-    Returns:
-        supers_with_audio: supers with audio evaluation
-    """
+  """Detect Supers with Audio
+  Args:
+      feature_name: the name of the feature
+      video_uri: video location in gcs
+  Returns:
+      supers_with_audio: supers with audio evaluation
+  """
 
-    t_annotation_uri = (
-        f"{gcs_utils.get_annotation_uri(config, video_uri)}"
-        f"{Annotations.GENERIC_ANNOTATIONS.value}.json"
+  t_annotation_uri = (
+    f"{gcs_utils.get_annotation_uri(config, video_uri)}"
+    f"{Annotations.GENERIC_ANNOTATIONS.value}.json"
+  )
+  text_annotation_results = gcs_utils.load_annotation_blob(t_annotation_uri)
+
+  s_annotation_uri = (
+    f"{gcs_utils.get_annotation_uri(config, video_uri)}"
+    f"{Annotations.SPEECH_ANNOTATIONS.value}.json"
+  )
+  speech_annotation_results = gcs_utils.load_annotation_blob(s_annotation_uri)
+
+  # Feature Supers with Audio
+  supers_with_audio = False
+
+  detected_text_list = []
+
+  # Video API: Evaluate supers_with_audio_feature
+  if (
+    "text_annotations" in text_annotation_results
+    and "speech_transcriptions" in speech_annotation_results
+  ):
+    # Build list of found supers
+    for text_annotation in text_annotation_results.get("text_annotations"):
+      detected_text_list.append(text_annotation.get("text"))
+
+    # Video API: Evaluate supers_with_audio
+    (
+      supers_with_audio,
+      _na,
+    ) = find_elements_in_transcript(
+      config,
+      speech_transcriptions=speech_annotation_results.get(
+        "speech_transcriptions"
+      ),
+      elements=detected_text_list,
+      elements_categories=[],
+      apply_condition=True,  # flag to filter out text with less than x
+      # chars. This is only needed when elements come from text
+      # annotations since words are sometimes 1 character only.
     )
-    text_annotation_results = gcs_utils.load_annotation_blob(t_annotation_uri)
-
-    s_annotation_uri = (
-        f"{gcs_utils.get_annotation_uri(config, video_uri)}"
-        f"{Annotations.SPEECH_ANNOTATIONS.value}.json"
+  else:
+    print(
+      "No Text or Speech annotations found. Skipping"
+      f" {feature_name} evaluation."
     )
-    speech_annotation_results = gcs_utils.load_annotation_blob(s_annotation_uri)
 
-    # Feature Supers with Audio
-    supers_with_audio = False
+  print(f"{feature_name}: {supers_with_audio} \n")
 
-    detected_text_list = []
-
-    # Video API: Evaluate supers_with_audio_feature
-    if (
-        "text_annotations" in text_annotation_results
-        and "speech_transcriptions" in speech_annotation_results
-    ):
-        # Build list of found supers
-        for text_annotation in text_annotation_results.get("text_annotations"):
-            detected_text_list.append(text_annotation.get("text"))
-
-        # Video API: Evaluate supers_with_audio
-        (
-            supers_with_audio,
-            _na,
-        ) = find_elements_in_transcript(
-            config,
-            speech_transcriptions=speech_annotation_results.get(
-                "speech_transcriptions"
-            ),
-            elements=detected_text_list,
-            elements_categories=[],
-            apply_condition=True,  # flag to filter out text with less than x
-            # chars. This is only needed when elements come from text
-            # annotations since words are sometimes 1 character only.
-        )
-    else:
-        print(
-            "No Text or Speech annotations found. Skipping"
-            f" {feature_name} evaluation."
-        )
-
-    print(f"{feature_name}: {supers_with_audio} \n")
-
-    return supers_with_audio
+  return supers_with_audio
